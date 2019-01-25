@@ -1,0 +1,5 @@
+// Microsoft Visual C++ generated Help ID include file.
+// Used by wingui.rc
+//
+#define HIDC_DEFAULTOPTIONS_PAUSEWHENINACTIVE \
+                                        0xffff05b2    // "OPTIONS"

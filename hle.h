@@ -1,0 +1,145 @@
+extern int Instruction_Order[];      // Return pointer to the compiled block
+extern void RecompileFunction(void);
+extern void osEnqueueAndYield(void); //Mario(US) 80327c80
+extern void osSendMessage(void);        
+extern void osDisableInt(void);      //Mario(US) 803274d0
+extern void osRestoreInt(void);      //Mario(US) 803274f0
+extern void osPopThread(void);       //Mario(US) 80327d58
+extern void osDispatchThread(void);  //Mario(US) 80327d68
+
+
+#define _r0 0
+#define _at 1
+#define _v0 2
+#define _v1 3
+#define _a0 4
+#define _a1 5
+#define _a2 6
+#define _a3 7
+#define _t0 8
+#define _t1 9
+#define _t2 10
+#define _t3 11
+#define _t4 12
+#define _t5 13
+#define _t6 14
+#define _t7 15
+
+#define _s0 16
+#define _s1 17
+#define _s2 18
+#define _s3 19
+#define _s4 20
+#define _s5 21
+#define _s6 22
+#define _s7 23
+#define _t8 24
+#define _t9 25
+#define _k0 26
+#define _k1 27
+#define _gp 28
+#define _sp 29
+#define __s8 30
+#define _ra 31
+
+#define _r0_ ebp-128
+#define _at_ ebp-120
+#define _v0_ ebp-112
+#define _v1_ ebp-104
+#define _a0_ ebp-96
+#define _a1_ ebp-88
+#define _a2_ ebp-80
+#define _a3_ ebp-72
+#define _t0_ ebp-64
+#define _t1_ ebp-56
+#define _t2_ ebp-48
+#define _t3_ ebp-40
+#define _t4_ ebp-32
+#define _t5_ ebp-24
+#define _t6_ ebp-16
+#define _t7_ ebp-8
+
+#define _s0_ ebp
+#define _s1_ ebp+8
+#define _s2_ ebp+16
+#define _s3_ ebp+24
+#define _s4_ ebp+32
+#define _s5_ ebp+40
+#define _s6_ ebp+48
+#define _s7_ ebp+56
+#define _t8_ ebp+64
+#define _t9_ ebp+72
+#define _k0_ ebp+80
+#define _k1_ ebp+88
+#define _gp_ ebp+96
+#define _sp_ ebp+104
+#define _s8_ ebp+112
+#define _ra_ ebp+120
+
+#define _status_    gHardwareState+320
+#define _COP1Con31_ gHardwareState+788
+
+#define _f0_lo_      gHardwareState+400
+#define _f0_hi_      gHardwareState+404
+#define _f1_lo_      gHardwareState+408
+#define _f1_hi_      gHardwareState+412
+#define _f2_lo_      gHardwareState+416
+#define _f2_hi_      gHardwareState+420
+#define _f3_lo_      gHardwareState+424
+#define _f3_hi_      gHardwareState+428
+#define _f4_lo_      gHardwareState+432
+#define _f4_hi_      gHardwareState+436
+#define _f5_lo_      gHardwareState+440
+#define _f5_hi_      gHardwareState+444
+#define _f6_lo_      gHardwareState+448
+#define _f6_hi_      gHardwareState+452
+#define _f7_lo_      gHardwareState+456
+#define _f7_hi_      gHardwareState+460
+#define _f8_lo_      gHardwareState+464
+#define _f8_hi_      gHardwareState+468
+#define _f9_lo_      gHardwareState+472
+#define _f9_hi_      gHardwareState+476
+#define _f10_lo_     gHardwareState+480
+#define _f10_hi_     gHardwareState+484
+#define _f11_lo_     gHardwareState+488
+#define _f11_hi_     gHardwareState+492
+#define _f12_lo_     gHardwareState+496
+#define _f12_hi_     gHardwareState+500
+#define _f13_lo_     gHardwareState+504
+#define _f13_hi_     gHardwareState+508
+#define _f14_lo_     gHardwareState+512
+#define _f14_hi_     gHardwareState+516
+#define _f15_lo_     gHardwareState+520
+#define _f15_hi_     gHardwareState+524
+#define _f16_lo_     gHardwareState+528
+#define _f16_hi_     gHardwareState+532
+#define _f17_lo_     gHardwareState+536
+#define _f17_hi_     gHardwareState+540
+#define _f18_lo_     gHardwareState+544
+#define _f18_hi_     gHardwareState+548
+#define _f19_lo_     gHardwareState+552
+#define _f19_hi_     gHardwareState+556
+#define _f20_lo_     gHardwareState+560
+#define _f20_hi_     gHardwareState+564
+#define _f21_lo_     gHardwareState+568
+#define _f21_hi_     gHardwareState+572
+#define _f22_lo_     gHardwareState+576
+#define _f22_hi_     gHardwareState+580
+#define _f23_lo_     gHardwareState+584
+#define _f23_hi_     gHardwareState+588
+#define _f24_lo_     gHardwareState+592
+#define _f24_hi_     gHardwareState+596
+#define _f25_lo_     gHardwareState+600
+#define _f25_hi_     gHardwareState+604
+#define _f26_lo_     gHardwareState+608
+#define _f26_hi_     gHardwareState+612
+#define _f27_lo_     gHardwareState+616
+#define _f27_hi_     gHardwareState+620
+#define _f28_lo_     gHardwareState+624
+#define _f28_hi_     gHardwareState+628
+#define _f29_lo_     gHardwareState+632
+#define _f29_hi_     gHardwareState+636
+#define _f30_lo_     gHardwareState+640
+#define _f30_hi_     gHardwareState+644
+#define _f31_lo_     gHardwareState+648
+#define _f31_hi_     gHardwareState+652
