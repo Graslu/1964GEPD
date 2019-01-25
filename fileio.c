@@ -866,15 +866,10 @@ BOOL FileIO_CreateFile(char *filename, int size)
 void GetFileName(char *Directory, char *Ext)
 {
 	/*~~~~~~~~~~~~~~~~~*/
-	char	CRC[8];
+	char	country[10];
 	char	romname[260];
 	int		i;
 	/*~~~~~~~~~~~~~~~~~*/
-
-	for(i = 0; i < 8; i++)
-	{
-		CRC[i] = ((char *) &rominfo.crc1)[i ^ 3];
-	}
 
 	strcpy(romname, rominfo.name);
 	for(i = 0; i < (int) strlen(romname); i++)
@@ -884,15 +879,91 @@ void GetFileName(char *Directory, char *Ext)
 			romname[i] = '-';
 		}
 	}
+	
+	//Keep Country Name < 10 characters!
+	switch(rominfo.countrycode)
+	{
+	/* Demo */
+	case 0:
+		strcpy(country, "demo");
+		break;
+
+	case '7':
+		strcpy(country, "beta");
+		break;
+
+	case 0x41:
+		strcpy(country, "usjp");
+		break;
+
+	/* Germany */
+	case 0x44:
+		strcpy(country, "ger");
+		break;
+
+	/* USA */
+	case 0x45:
+		strcpy(country, "usa");
+		break;
+
+	/* France */
+	case 0x46:
+		strcpy(country, "fra");
+		break;
+
+	/* Italy */
+	case 'I':
+		strcpy(country, "ita");
+		break;
+
+	/* Japan */
+	case 0x4A:
+		strcpy(country, "jp");
+		break;
+
+	/* Europe - PAL */
+	case 0x50:
+		strcpy(country, "eur");
+		break;
+
+	case 'S':	/* Spain */
+		strcpy(country, "spa");
+		break;
+
+	/* Australia */
+	case 0x55:
+		strcpy(country, "aus");
+		break;
+
+	case 0x58:
+		strcpy(country, "eur");
+		break;
+
+	/* Australia */
+	case 0x59:
+		strcpy(country, "aus");
+		break;
+
+	case 0x20:
+	case 0x21:
+	case 0x38:
+	case 0x70:
+		sprintf(country, "eur");
+		break;
+
+	/* ??? */
+	default:
+		sprintf(country, "pal");
+		break;
+	}
 
 	sprintf
 	(
 		Directory,
-		"%s%s-%X%X.%s",
+		"%s%s-%s.%s",
 		directories.save_directory_to_use,
 		romname,
-		((_u32 *) &CRC)[0],
-		((_u32 *) &CRC)[1],
+		country,
 		Ext
 	);
 	AnalyzeString(Directory);

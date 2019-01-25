@@ -24,7 +24,6 @@
 #define ID_DEBUGGER_SHOWHEAD            110
 #define WINGUI_ACC                      110
 #define ID_DEBUGGER_SHOWVIREGS          113
-#define ID_ROM_START                    114
 #define ID_ROM_STOP                     115
 #define ID_OPENROM                      116
 #define ID_DEBUGGER_SHOWCODELIST        117
@@ -223,18 +222,15 @@
 #define ID_CPU_VIDEOFRAMESKIPPING_SKIP1PER4FRAMES 327
 #define ID_CPU_VIDEOFRAMESKIPPING_SKIP1PER3FRAMES 328
 #define ID_CPU_VIDEOFRAMESKIPPING_SKIP1PER2FRAMES 329
-#define ID_BUTTON330                    330
 #define ID_BUTTON_FULL_SCREEN           331
-#define ID_BUTTON_HOME_PAGE             332
 #define ID_BUTTON_ROM_PROPERTIES        333
 #define ID_BUTTON_OPEN_ROM              334
 #define ID_BUTTON_PLAY                  335
 #define ID_BUTTON_PAUSE                 336
 #define ID_BUTTON_STOP                  337
 #define ID_BUTTON_SETUP_PLUGINS         338
-#define ID_BUTTON_RESET                 339
 #define ID_BUTTON_HELP                  340
-#define ID_BUTTON341                    341
+#define ID_SHOWMOUSE                    343
 #define IDC_EDIT                        401
 #define IDC_CPUR0                       1000
 #define IDC_GPR1                        1001
@@ -719,7 +715,6 @@
 #define IDC_CHEAT_NOTE2                 1484
 #define IDC_VEC285                      1485
 #define IDC_VEC286                      1486
-#define IDC_DOWNLOAD_PLUGINS            1486
 #define IDC_VEC287                      1487
 #define IDC_VEC288                      1488
 #define IDC_VEC291                      1491
@@ -781,7 +776,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        182
-#define _APS_NEXT_COMMAND_VALUE         343
+#define _APS_NEXT_COMMAND_VALUE         345
 #define _APS_NEXT_CONTROL_VALUE         1512
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

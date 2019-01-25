@@ -182,6 +182,7 @@ step2:
 	SetStatusBarText(0, generalmessage);
 	SetWindowText(gui.hwnd1964main, generalmessage);
 	Mute();
+	ShowCursor(TRUE);
 	return TRUE;
 }
 
@@ -214,6 +215,7 @@ void ResumeEmulator(int action_after_pause)
 	SetWindowText(gui.hwnd1964main, generalmessage);
 	CheckButton(ID_BUTTON_PLAY, TRUE);
 	CheckButton(ID_BUTTON_PAUSE, FALSE);
+	ShowCursor(FALSE);
 }
 
 /*

@@ -142,6 +142,7 @@ void ReadConfiguration(void)
 
 	emuoptions.dma_in_segments = ReadRegistryDwordVal(MAIN_1964_KEY, "DmaInSegments");
 	emuoptions.SyncVI = ReadRegistryDwordVal(MAIN_1964_KEY, "emuoptions.SyncVI");
+	emuoptions.SyncVI = TRUE;
 
 	guioptions.use_default_save_directory = ReadRegistryDwordVal(MAIN_1964_KEY, "UseDefaultSaveDiectory");
 	guioptions.use_default_state_save_directory = ReadRegistryDwordVal(MAIN_1964_KEY, "UseDefaultStateSaveDiectory");

@@ -35,7 +35,7 @@ BEGIN
         MENUITEM "&Open ROM...\tCtrl+O",        ID_OPENROM
         MENUITEM "Close ROM",                   ID_CLOSEROM, GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "Change Folder ...\tCtrl+D",   ID_CHANGEDIRECTORY
+        MENUITEM "Change Folder ...",           ID_CHANGEDIRECTORY
         MENUITEM "Refresh ROM List\tCtrl+L",    ID_FILE_FRESHROMLIST
         POPUP "Recent ROM Folders"
         BEGIN
@@ -77,18 +77,17 @@ BEGIN
         MENUITEM "Cheat Codes...\tCtrl+C",      ID_FILE_CHEAT, GRAYED
         MENUITEM "User Options...\tCtrl+U",     ID_PREFERENCE_OPTIONS
         MENUITEM SEPARATOR
-        MENUITEM "ROM Properties...\tCtrl+S",   ID_FILE_ROMINFO, GRAYED
+        MENUITEM "ROM Properties...",           ID_FILE_ROMINFO, GRAYED
         MENUITEM "Advanced Options...",         ID_DEFAULTOPTIONS
     END
     POPUP "CPU"
     BEGIN
         MENUITEM "&Pause/Play\tF3",             ID_ROM_PAUSE, GRAYED
-        MENUITEM "Reset\tF2",                   ID_ROM_START, GRAYED
         MENUITEM "&Stop\tF4",                   ID_ROM_STOP
         MENUITEM "Kill CPU Thread\tF10",        ID_CPU_KILL
         MENUITEM SEPARATOR
-        MENUITEM "Save State...\tCtrl+F5",      ID_SAVESTATE, GRAYED
-        MENUITEM "Load State...\tCtrl+F7",      ID_LOADSTATE, GRAYED
+        MENUITEM "Save State...",               ID_SAVESTATE, GRAYED
+        MENUITEM "Load State...",               ID_LOADSTATE, GRAYED
         POPUP "Save State\tF5"
         BEGIN
             MENUITEM "State\t0",                    ID_SAVE_STATE_0, CHECKED
@@ -160,14 +159,14 @@ BEGIN
             MENUITEM "8 x 4 Falf Rate\tCtrl+8",     ID_CF_CF8
         END
         MENUITEM "Apply Gameshark Green Button Cheats\tF9", ID_CHEATS_APPLY
-        MENUITEM "Video Speed Sync\tF6",        ID_CPU_AUDIOSYNC, CHECKED
+        MENUITEM "Video Speed Sync",        ID_CPU_AUDIOSYNC, CHECKED
     END
     POPUP "&Plugins"
     BEGIN
         MENUITEM "Change Plugins ...\tCtrl+P",  IDM_PLUGINS
         MENUITEM SEPARATOR
         MENUITEM "&Video Settings ...\tCtrl+V", ID_VIDEO_CONFIG
-        MENUITEM "&Audio Settings ...\tCtrl+A", ID_AUD_CONFIG
+        MENUITEM "&Audio Settings ...",         ID_AUD_CONFIG
         MENUITEM "&Input Settings ...\tCtrl+I", ID_DI_CONFIG
         MENUITEM "RSP Plugin Settings ...\tCtrl+R", ID_RSP_CONFIG
         MENUITEM SEPARATOR
@@ -246,8 +245,7 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "Online Help",                 ID_ONLINE_HELP
-        MENUITEM "&1964 Home Page",             ID_CHECKWEB
+        MENUITEM "Help",                 ID_ONLINE_HELP
         MENUITEM SEPARATOR
         MENUITEM "GPL Information...",          ID_REDISTRIBUTE
         MENUITEM "About Warranty...",           ID_ABOUT_WARRANTY
@@ -354,9 +352,9 @@ BEGIN
                     IDC_STATIC,143,109,132,76,SS_SUNKEN
     CTEXT           "\n (c) 1999-2002 Joel Middendorf <schibo@emulation64.com>\nThanks: steb, zilmar, anarko, Azimer, Jabo\nhttp://www.1964emu.com/\nHosted by www.emulation64.com",
                     IDC_STATIC,10,109,132,76,SS_SUNKEN
-    CTEXT           "\n1964 is not affiliated with any company. All logos/trademarks are the property of their respective owner(s).",
+    CTEXT           "\n1964 is not affiliated with any company. All logos/trademarks are the property of their respective owner(s).\n",
                     IDC_STATIC,143,63,132,45,SS_SUNKEN
-    CTEXT           "\n1964 0.8.5 by schibo and Rice\nCheat codes by  Emu64 Cheats Team\nOfficial 1964.ini File by Duncan",
+    CTEXT           "\n1964 0.8.5 by schibo and Rice\nCheat codes by Emu64 Cheats Team\nOfficial 1964.ini File by Duncan",
                     IDC_STATIC,10,63,132,45,SS_SUNKEN
     CONTROL         181,IDC_STATIC,"Static",SS_BITMAP | SS_CENTERIMAGE | 
                     SS_REALSIZEIMAGE,0,0,285,56,WS_EX_TRANSPARENT
@@ -1246,8 +1244,6 @@ BEGIN
     COMBOBOX        IDC_COMBO_INPUT,56,150,188,50,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "About",IDC_DI_ABOUT,194,170,50,14
-    PUSHBUTTON      "&Download Plugins Online",IDC_DOWNLOAD_PLUGINS,7,259,93,
-                    14
     DEFPUSHBUTTON   "OK",IDOK,203,241,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,203,259,50,14
     GROUPBOX        "Audio",IDC_STATIC,7,74,246,57,BS_CENTER
@@ -1262,7 +1258,7 @@ BEGIN
                     SS_SUNKEN,14,149,40,37,WS_EX_DLGMODALFRAME | 
                     WS_EX_TRANSPARENT | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE
     GROUPBOX        "RSP",IDC_STATIC,7,202,246,31,BS_CENTER
-    CONTROL         "Use RSP Plugin (Needed for Tooie, LLE Audio, & and JPEG)",
+    CONTROL         "Use RSP Plugin (Enable for GoldenEye 007/Disable for Perfect Dark)",
                     IDC_USE_RSP_PLUGIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     14,215,238,10
     GROUPBOX        "Input",IDC_STATIC,7,136,246,59,BS_CENTER
@@ -1358,7 +1354,7 @@ BEGIN
     GROUPBOX        "Enter New Code",IDC_STATIC_NEWCODEFRAME,238,5,155,318
     EDITTEXT        IDC_GAMESHARK_CODE,243,35,145,140,ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
-    LTEXT           "Name",IDC_STATIC_CodeName,243,15,20,8
+    LTEXT           "Name",1508,243,15,20,8
     EDITTEXT        IDC_GAMESHARK_NAME,268,15,120,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Add/Modify",IDC_GAMESHARK_ADD,240,305,50,14
     LTEXT           "Note2",IDC_CHEAT_NOTE2,243,226,145,75
@@ -1477,7 +1473,6 @@ WINGUI_ACC ACCELERATORS
 BEGIN
     "/",            ID_ABOUT,               ASCII,  ALT, NOINVERT
     "?",            ID_ABOUT,               ASCII,  ALT, NOINVERT
-    "A",            ID_AUD_CONFIG,          VIRTKEY, CONTROL, NOINVERT
     "1",            ID_CF_CF1,              VIRTKEY, CONTROL, NOINVERT
     "2",            ID_CF_CF2,              VIRTKEY, CONTROL, NOINVERT
     "3",            ID_CF_CF3,              VIRTKEY, CONTROL, NOINVERT
@@ -1486,22 +1481,17 @@ BEGIN
     "6",            ID_CF_CF6,              VIRTKEY, CONTROL, NOINVERT
     "7",            ID_CF_CF7,              VIRTKEY, CONTROL, NOINVERT
     "8",            ID_CF_CF8,              VIRTKEY, CONTROL, NOINVERT
-    "D",            ID_CHANGEDIRECTORY,     VIRTKEY, CONTROL, NOINVERT
     VK_F9,          ID_CHEATS_APPLY,        VIRTKEY, NOINVERT
-    VK_F6,          ID_CPU_AUDIOSYNC,       VIRTKEY, NOINVERT
     VK_F10,         ID_CPU_KILL,            VIRTKEY, NOINVERT
     "I",            ID_DI_CONFIG,           VIRTKEY, CONTROL, NOINVERT
     "C",            ID_FILE_CHEAT,          VIRTKEY, CONTROL, NOINVERT
     "L",            ID_FILE_FRESHROMLIST,   VIRTKEY, CONTROL, NOINVERT
-    "S",            ID_FILE_ROMINFO,        VIRTKEY, CONTROL, NOINVERT
-    VK_F7,          ID_LOADSTATE,           VIRTKEY, CONTROL, NOINVERT
     "O",            ID_OPENROM,             VIRTKEY, CONTROL, NOINVERT
     VK_F12,         ID_PLUGINS_SCREENSHOTS, VIRTKEY, NOINVERT
     "U",            ID_PREFERENCE_OPTIONS,  VIRTKEY, CONTROL, NOINVERT
     VK_F3,          ID_ROM_PAUSE,           VIRTKEY, NOINVERT
-    VK_F2,          ID_ROM_START,           VIRTKEY, NOINVERT
     "R",            ID_RSP_CONFIG,          VIRTKEY, CONTROL, NOINVERT
-    VK_F5,          ID_SAVESTATE,           VIRTKEY, CONTROL, NOINVERT
+    VK_TAB,         ID_SHOWMOUSE,           VIRTKEY, NOINVERT
     "V",            ID_VIDEO_CONFIG,        VIRTKEY, CONTROL, NOINVERT
     VK_RETURN,      IDM_FULLSCREEN,         VIRTKEY, ALT, NOINVERT
     "P",            IDM_PLUGINS,            VIRTKEY, CONTROL, NOINVERT
@@ -1530,9 +1520,9 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "Emulator for the N64 Console System"
+            VALUE "Comments", "Emulator for GoldenEye 007/Perfect Dark"
             VALUE "CompanyName", " "
-            VALUE "FileDescription", "1964"
+            VALUE "FileDescription", "GE/PD Edition"
             VALUE "FileVersion", "0, 8, 5, 0"
             VALUE "InternalName", "1964"
             VALUE "LegalCopyright", "Copyright © 1999-2002 Joel Middendorf"
@@ -1787,19 +1777,16 @@ IDB_1964                BITMAP                  "1964.bmp"
 // Toolbar
 //
 
-IDR_TOOLBAR1 TOOLBAR  16, 15
+IDR_TOOLBAR1 TOOLBAR  15, 15
 BEGIN
     BUTTON      ID_BUTTON_OPEN_ROM
     BUTTON      ID_BUTTON_FULL_SCREEN
-    BUTTON      ID_BUTTON_HOME_PAGE
     BUTTON      ID_BUTTON_ROM_PROPERTIES
     BUTTON      ID_BUTTON_PLAY
     BUTTON      ID_BUTTON_PAUSE
     BUTTON      ID_BUTTON_STOP
     BUTTON      ID_BUTTON_SETUP_PLUGINS
-    BUTTON      ID_BUTTON_RESET
     BUTTON      ID_BUTTON_HELP
-    BUTTON      ID_BUTTON341
 END
 
 
@@ -1823,9 +1810,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_BUTTON330            "Pause"
     ID_BUTTON_FULL_SCREEN   "Full Screen (Alt+Enter)"
-    ID_BUTTON_HOME_PAGE     "1964 Home Page"
     ID_BUTTON_ROM_PROPERTIES "ROM Properties (Ctrl+S)"
     ID_BUTTON_OPEN_ROM      "Open (Ctrl+O)"
     ID_BUTTON_PLAY          "Play (F3)"
@@ -1836,8 +1821,7 @@ BEGIN
     ID_BUTTON_PAUSE         "Pause (F3)"
     ID_BUTTON_STOP          "Stop (F4)"
     ID_BUTTON_SETUP_PLUGINS "Change Plugins (Ctrl+P)"
-    ID_BUTTON_RESET         "Reset (F2)"
-    ID_BUTTON_HELP          "Online Help (F1)"
+    ID_BUTTON_HELP          "Help"
 END
 
 #endif    // English (U.S.) resources

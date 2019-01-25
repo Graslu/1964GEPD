@@ -46,7 +46,7 @@ char		*codecheck_type_names[] =
 };
 char		*maxfps_type_names[] = { "Default", "No Limit", "NTSC 60 fps", "PAL 50 fps", "Auto Sync" };
 char		*usetlb_type_names[] = { "Default", "Yes", "No" };
-char		*eepromsize_type_names[] = { "Default", "No EEPROM", "4Kb EEPROM", "16Kb EEPROM" };
+char		*eepromsize_type_names[] = { "Default", "No EEPROM", "4Kb (GoldenEye)", "16Kb (Perfect Dark)" };
 char		*counter_factor_names[] = { "Default", "CF=1", "CF=2", "CF=3", "CF=4", "CF=5", "CF=6", "CF=7", "CF=8", };
 char		*register_caching_names[] = { "Default", "Yes", "No" };
 char		*use_fpu_hack_names[] = { "Default", "Yes", "No" };
@@ -89,12 +89,12 @@ void SetDefaultOptions(void)
 	defaultoptions.Emulator = DYNACOMPILER;
 	defaultoptions.Game_Name[0] = '\0';
 	defaultoptions.Max_FPS = MAXFPS_AUTO_SYNC;
-	defaultoptions.RDRAM_Size = RDRAMSIZE_4MB;
+	defaultoptions.RDRAM_Size = RDRAMSIZE_8MB;
 	defaultoptions.Save_Type = ANYUSED_SAVETYPE;
 	defaultoptions.Use_TLB = USETLB_YES;
 	defaultoptions.Eeprom_size = EEPROMSIZE_4KB;
 	defaultoptions.Use_Register_Caching = USEREGC_YES;
-	defaultoptions.Counter_Factor = COUTERFACTOR_2;
+	defaultoptions.Counter_Factor = COUTERFACTOR_1;
 	defaultoptions.FPU_Hack = USEFPUHACK_YES;
 	defaultoptions.DMA_Segmentation = USEDMASEG_YES;
 	defaultoptions.Link_4KB_Blocks = USE4KBLINKBLOCK_YES;
@@ -119,16 +119,16 @@ void GenerateCurrentRomOptions(void)
 	if(RomListSelectedEntry()->pinientry->Code_Check == 0) currentromoptions.Code_Check = defaultoptions.Code_Check;
 
 	if(RomListSelectedEntry()->pinientry->Eeprom_size == 0)
-		currentromoptions.Eeprom_size = defaultoptions.Eeprom_size;
+		currentromoptions.Eeprom_size = EEPROMSIZE_4KB;
 
 	if(RomListSelectedEntry()->pinientry->Emulator == 0) currentromoptions.Emulator = defaultoptions.Emulator;
 	if(RomListSelectedEntry()->pinientry->Max_FPS == 0) currentromoptions.Max_FPS = defaultoptions.Max_FPS;
-	if(RomListSelectedEntry()->pinientry->RDRAM_Size == 0) currentromoptions.RDRAM_Size = defaultoptions.RDRAM_Size;
-	if(RomListSelectedEntry()->pinientry->Save_Type == 0) currentromoptions.Save_Type = defaultoptions.Save_Type;
+	if(RomListSelectedEntry()->pinientry->RDRAM_Size == 0) currentromoptions.RDRAM_Size = RDRAMSIZE_8MB;
+	if(RomListSelectedEntry()->pinientry->Save_Type == 0) currentromoptions.Save_Type = ANYUSED_SAVETYPE;
 	if(RomListSelectedEntry()->pinientry->Use_TLB == 0) currentromoptions.Use_TLB = defaultoptions.Use_TLB;
 
 	if(RomListSelectedEntry()->pinientry->Counter_Factor == 0)
-		currentromoptions.Counter_Factor = defaultoptions.Counter_Factor;
+		currentromoptions.Counter_Factor = COUTERFACTOR_1;
 
 	if(RomListSelectedEntry()->pinientry->Use_Register_Caching == 0)
 		currentromoptions.Use_Register_Caching = defaultoptions.Use_Register_Caching;

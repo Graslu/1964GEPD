@@ -41,6 +41,7 @@
 BOOL	CPUNeedToDoOtherTask = FALSE;
 BOOL	CPUNeedToCheckInterrupt = FALSE;
 int		CounterFactor = COUTERFACTOR_2;
+float	DOUBLE_COUNT=6.0f;
 
 /* Optimized new CPU COUNT and VI counter variables */
 uint64	current_counter;
@@ -705,8 +706,6 @@ void Check_VI_and_COMPARE_Interrupt(void)
 	Set_Countdown_Counter();
 }
 
-#define DOUBLE_COUNT	1 //2	/* 1 */
-
 /*
  =======================================================================================================================
  =======================================================================================================================
@@ -861,6 +860,7 @@ void Init_VI_Counter(int tv_type)
 		max_vi_count = NTSC_VI_MAGIC_NUMBER;	/* 883120;//813722;//813196;//NTSC_VI_MAGIC_NUMBER; */
 		max_vi_lines = NTSC_MAX_VI_LINE;
 	}
+	max_vi_count*=DOUBLE_COUNT;
 
 	vi_count_per_line = max_vi_count / max_vi_lines;
 }
@@ -872,6 +872,7 @@ void Init_VI_Counter(int tv_type)
 void Set_VI_Counter_By_VSYNC(void)
 {
 	max_vi_count = (VI_V_SYNC_REG + 1) * 1500;
+	max_vi_count*=DOUBLE_COUNT;
 	if((VI_V_SYNC_REG % 1) != 0)
 	{
 		max_vi_count -= 38;

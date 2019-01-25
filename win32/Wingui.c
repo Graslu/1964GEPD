@@ -89,7 +89,8 @@ int					game_country_tvsystem = 0;
 
 int					Audio_Is_Initialized = 0;
 int					timer;
-int					StateFileNumber = 0;
+int					StateFileNumber = 1;
+int					ShowMouse = 1;
 
 extern int			selected_rom_index;
 extern BOOL			Is_Reading_Rom_File;;
@@ -535,23 +536,13 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case ID_BUTTON_STOP:
 			CloseROM();
 			break;
-		case ID_ROM_START:
-		case ID_BUTTON_RESET:
-			if (!emustatus.Emu_Is_Running) return;
-			emustatus.Emu_Is_Resetting = 1;
-			Play(emuoptions.auto_full_screen);
-			break;
 		case ID_ROM_PAUSE:
 			ChangeButtonState(ID_BUTTON_PAUSE);
 			PlayButtonState = ChangeButtonState(ID_BUTTON_PLAY);
 			if((PlayButtonState &0x01) != TBSTATE_CHECKED)
-			{
 				PauseEmulator();
-			}
 			else
-			{
 				ResumeEmulator(DO_NOTHING_AFTER_PAUSE);
-			}
 			break;
 		case ID_BUTTON_PLAY:
 			ResumeEmulator(DO_NOTHING_AFTER_PAUSE);
@@ -815,20 +806,19 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case ID_PLUGINS_SCREENSHOTS:
 			CaptureScreenToFile();
 			break;
+		case ID_SHOWMOUSE:
+			ShowCursor(!emustatus.Emu_Is_Running);
+			break;
 		case IDM_PLUGINS:
 		case ID_BUTTON_SETUP_PLUGINS:
 			if (!guistatus.IsFullScreen)
 			DialogBox(gui.hInst, "PLUGINS", hWnd, (DLGPROC) PluginsDialog);
 			break;
 		case ID_CHECKWEB:
-		case ID_BUTTON_HOME_PAGE:
-			if (!guistatus.IsFullScreen)
-			ShellExecute(gui.hwnd1964main, "open", "http://1964emu.emulation64.com", NULL, NULL, SW_MAXIMIZE);
-			break;
 		case ID_ONLINE_HELP:
 		case ID_BUTTON_HELP:
 			if (!guistatus.IsFullScreen)
-			ShellExecute(gui.hwnd1964main, "open", "http://1964emu.emulation64.com/help.htm", NULL, NULL, SW_MAXIMIZE);
+			MessageBox(NULL, "If you are having issues, please read the file BUNDLE_README.txt located in the 1964 directory.", "Help", MB_OK);
 			break;
 		case ID_CONFIGURE_VIDEO:
 			VIDEO_DllConfig(hWnd);
@@ -961,11 +951,7 @@ void ProcessToolTips(LPARAM lParam)
 
 		case ID_BUTTON_STOP:
 			lpttt->lpszText = MAKEINTRESOURCE(ID_BUTTON_STOP);
-			break; 
-
-		case ID_BUTTON_RESET:
-			lpttt->lpszText = MAKEINTRESOURCE(ID_BUTTON_RESET);
-			break; 
+			break;
 
 		case ID_BUTTON_SETUP_PLUGINS:
 			lpttt->lpszText = MAKEINTRESOURCE(ID_BUTTON_SETUP_PLUGINS);
@@ -977,10 +963,6 @@ void ProcessToolTips(LPARAM lParam)
 
 		case ID_BUTTON_HELP:
 			lpttt->lpszText = MAKEINTRESOURCE(ID_BUTTON_HELP); 
-            break; 
-
-		case ID_BUTTON_HOME_PAGE:
-			lpttt->lpszText = MAKEINTRESOURCE(ID_BUTTON_HOME_PAGE); 
             break; 
 
 		case ID_BUTTON_FULL_SCREEN:
@@ -1039,6 +1021,7 @@ void OnWindowSize(WPARAM wParam)
 void ProcessKeyboardInput(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	BOOL				ctrlkey;
+	BOOL				shiftkey;
 	/* Disable Alt Key for menus in full screen */
      BYTE keymap[256];
 
@@ -1061,6 +1044,7 @@ void ProcessKeyboardInput(UINT message, WPARAM wParam, LPARAM lParam)
     }
 
 	ctrlkey = GetKeyState(VK_CONTROL) & 0xFF000000;
+	shiftkey = GetKeyState(VK_LSHIFT) & 0xFF000000;
 	switch(wParam)
 	{
 	case VK_F5:
@@ -1096,9 +1080,10 @@ void ProcessKeyboardInput(UINT message, WPARAM wParam, LPARAM lParam)
 	case 0x37:
 	case 0x38:
 	case 0x39:
-		if(!ctrlkey)
+		if(shiftkey && !ctrlkey)
 		{
 			StateSetNumber(wParam - 0x30);
+			MessageBeep(MB_ICONASTERISK);
 		}
 	break;
 	
@@ -1447,7 +1432,6 @@ void Play(BOOL WithFullScreen)
 		{
 			EnableMenuItem(gui.hMenu1964main, ID_FILE_CHEAT, MF_GRAYED);
 			EnableMenuItem(gui.hMenu1964main, ID_CLOSEROM, MF_GRAYED);
-			EnableMenuItem(gui.hMenu1964main, ID_ROM_START, MF_GRAYED);
 			EnableRadioButtons(FALSE);
 			EnableMenuItem(gui.hMenu1964main, ID_ROM_PAUSE, MF_GRAYED);
 
@@ -1723,7 +1707,6 @@ void CloseROM(void)
 		EnableButton(ID_BUTTON_OPEN_ROM, TRUE);
 		EnableMenuItem(gui.hMenu1964main, IDM_PLUGINS, MF_ENABLED);
 		EnableButton(ID_BUTTON_SETUP_PLUGINS, TRUE);
-		EnableMenuItem(gui.hMenu1964main, ID_ROM_START, MF_GRAYED);
 		EnableRadioButtons(FALSE);
 
 		EnableMenuItem(gui.hMenu1964main, ID_ROM_PAUSE, MF_GRAYED);
@@ -1736,7 +1719,7 @@ void CloseROM(void)
 
 		SetWindowText(gui.hwnd1964main, gui.szBaseWindowTitle);
 	}
-
+	ShowCursor(TRUE);
 	/*
 	 * else
 	 * DisplayError("Please load a ROM first.");
@@ -1756,7 +1739,6 @@ void OpenROM(void)
 
 	if(WinLoadRom() == TRUE)	/* If the user opened a rom, */
 	{
-		EnableMenuItem(gui.hMenu1964main, ID_ROM_START, MF_ENABLED);
 		EnableRadioButtons(TRUE);
 		EnableMenuItem(gui.hMenu1964main, ID_CLOSEROM, MF_ENABLED);
 		EnableMenuItem(gui.hMenu1964main, ID_FILE_ROMINFO, MF_ENABLED);
@@ -1905,7 +1887,6 @@ BOOL StartGameByCommandLine()
 		CodeList_ReadCode(rominfo.name);
 		RefreshRecentGameMenus(szFileName);
 
-		EnableMenuItem(gui.hMenu1964main, ID_ROM_START, MF_ENABLED);
 		EnableRadioButtons(TRUE);
 		EnableMenuItem(gui.hMenu1964main, ID_CLOSEROM, MF_ENABLED);
 		EnableMenuItem(gui.hMenu1964main, ID_FILE_ROMINFO, MF_ENABLED);
@@ -1958,7 +1939,6 @@ void OpenRecentGame(int id)
 			/* Read hack code for this rom */
 			CodeList_ReadCode(rominfo.name);
 
-			EnableMenuItem(gui.hMenu1964main, ID_ROM_START, MF_ENABLED);
 			EnableRadioButtons(TRUE);
 			EnableMenuItem(gui.hMenu1964main, ID_CLOSEROM, MF_ENABLED);
 			EnableMenuItem(gui.hMenu1964main, ID_FILE_ROMINFO, MF_ENABLED);
@@ -3050,7 +3030,6 @@ void AfterStop(void)
 	EnableMenuItem(gui.hMenu1964main, IDM_PLUGINS, MF_ENABLED);
 	EnableButton(ID_BUTTON_SETUP_PLUGINS, TRUE);
 	EnableMenuItem(gui.hMenu1964main, ID_CLOSEROM, MF_ENABLED);
-	EnableMenuItem(gui.hMenu1964main, ID_ROM_START, MF_ENABLED);
 	EnableMenuItem(gui.hMenu1964main, ID_ROM_PAUSE, MF_GRAYED);
 	EnableMenuItem(gui.hMenu1964main, ID_KAILLERA_MODE, (IsKailleraDllLoaded())? MF_ENABLED:MF_GRAYED);
 	EnableRadioButtons(FALSE);

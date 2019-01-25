@@ -856,18 +856,6 @@ skipdll:
 					return(TRUE);
 				}
 
-			case IDC_DOWNLOAD_PLUGINS:
-				ShellExecute
-				(
-					gui.hwnd1964main,
-					"open",
-					"http://1964emu.emulation64.com/plugins.htm/",
-					NULL,
-					NULL,
-					SW_MAXIMIZE
-				);
-				break;
-
 			case IDC_DI_ABOUT:
 				CONTROLLER_Under_Selecting_DllAbout(hDlg);
 				break;

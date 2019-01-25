@@ -338,7 +338,6 @@ void RomListOpenRom(int index, BOOL RunThisRom)
 			/* Read hack code for this rom */
 			CodeList_ReadCode(rominfo.name);
 
-			EnableMenuItem(gui.hMenu1964main, ID_ROM_START, MF_ENABLED);
 			EnableRadioButtons(TRUE);
 			EnableMenuItem(gui.hMenu1964main, ID_ROM_PAUSE, MF_GRAYED);
 			EnableMenuItem(gui.hMenu1964main, ID_FILE_ROMINFO, MF_ENABLED);
@@ -1017,12 +1016,9 @@ void EnableRadioButtons(BOOL bEnable)
 	CheckButton(ID_BUTTON_PAUSE, FALSE);
 	EnableButton(ID_BUTTON_STOP, bEnable);
 	CheckButton(ID_BUTTON_STOP, FALSE);
-	EnableButton(ID_BUTTON_RESET, bEnable);
-	CheckButton(ID_BUTTON_RESET, FALSE);
 
 	//Enable or disable buttons and menus that open a web browser
 	EnableButton(ID_BUTTON_HELP, bEnable^1);
-	EnableButton(ID_BUTTON_HOME_PAGE, bEnable^1);
 	EnableButton(ID_BUTTON_OPEN_ROM, bEnable^1);
 	if (bEnable == TRUE)
 	{
@@ -1103,7 +1099,7 @@ void EnableButton(int nID, BOOL bEnable)
 void SetupToolBar()
 {
 		TBADDBITMAP tbab;
-         TBBUTTON tbb[13];
+         TBBUTTON tbb[11];
 
       	gui.hToolBar = CreateWindowEx
 		(	
@@ -1140,56 +1136,46 @@ void SetupToolBar()
 
          tbb[1].fsStyle = TBSTYLE_SEP;
 
-		 tbb[2].iBitmap = 4;
+		 tbb[2].iBitmap = 3;
          tbb[2].fsState = TBSTATE_ENABLED;
          tbb[2].fsStyle = TBSTYLE_CHECKGROUP;
          tbb[2].idCommand = ID_BUTTON_PLAY;
 
-		 tbb[3].iBitmap = 5;
+		 tbb[3].iBitmap = 4;
          tbb[3].fsState = TBSTATE_ENABLED;
          tbb[3].fsStyle = TBSTYLE_CHECKGROUP;
          tbb[3].idCommand = ID_BUTTON_PAUSE;
 
-		 tbb[4].iBitmap = 6;
+		 tbb[4].iBitmap = 5;
          tbb[4].fsState = TBSTATE_ENABLED;
          tbb[4].fsStyle = TBSTYLE_BUTTON; 
          tbb[4].idCommand = ID_BUTTON_STOP;
 
-		 tbb[5].iBitmap = 8;
-         tbb[5].fsState = TBSTATE_ENABLED;
-         tbb[5].fsStyle = TBSTYLE_BUTTON;
-         tbb[5].idCommand = ID_BUTTON_RESET;
-
-		 tbb[6].fsStyle = TBSTYLE_SEP;
+		 tbb[5].fsStyle = TBSTYLE_SEP;
 		 
-         tbb[7].iBitmap = 7;
-         tbb[7].fsState = TBSTATE_ENABLED;
+         tbb[6].iBitmap = 6;
+         tbb[6].fsState = TBSTATE_ENABLED;
+         tbb[6].fsStyle = TBSTYLE_BUTTON;
+         tbb[6].idCommand = ID_BUTTON_SETUP_PLUGINS;
+
+         tbb[7].iBitmap = 2;
+         tbb[7].fsState = 0;
          tbb[7].fsStyle = TBSTYLE_BUTTON;
-         tbb[7].idCommand = ID_BUTTON_SETUP_PLUGINS;
-
-         tbb[8].iBitmap = 3;
-         tbb[8].fsState = 0;
-         tbb[8].fsStyle = TBSTYLE_BUTTON;
-         tbb[8].idCommand = ID_BUTTON_ROM_PROPERTIES;
+         tbb[7].idCommand = ID_BUTTON_ROM_PROPERTIES;
 		 
-         tbb[9].iBitmap = 9;
-         tbb[9].fsState = TBSTATE_ENABLED;
-         tbb[9].fsStyle = TBSTYLE_BUTTON;
-         tbb[9].idCommand = ID_BUTTON_HELP;
+         tbb[8].iBitmap = 7;
+         tbb[8].fsState = TBSTATE_ENABLED;
+         tbb[8].fsStyle = TBSTYLE_BUTTON;
+         tbb[8].idCommand = ID_BUTTON_HELP;
 
-		 tbb[10].iBitmap = 2;
+		 tbb[9].fsStyle = TBSTYLE_SEP;
+
+		 tbb[10].iBitmap = 1;
          tbb[10].fsState = TBSTATE_ENABLED;
          tbb[10].fsStyle = TBSTYLE_BUTTON;
-         tbb[10].idCommand = ID_BUTTON_HOME_PAGE;
+         tbb[10].idCommand = ID_BUTTON_FULL_SCREEN;
 
-		 tbb[11].fsStyle = TBSTYLE_SEP;
-
-		 tbb[12].iBitmap = 1;
-         tbb[12].fsState = TBSTATE_ENABLED;
-         tbb[12].fsStyle = TBSTYLE_BUTTON;
-         tbb[12].idCommand = ID_BUTTON_FULL_SCREEN;
-
-		 SendMessage(gui.hToolBar, TB_ADDBUTTONS, 13, (LPARAM)&tbb);
+		 SendMessage(gui.hToolBar, TB_ADDBUTTONS, 11, (LPARAM)&tbb);
 		 gui.hReBar = CreateRebar(gui.hwnd1964main);
 }
 
