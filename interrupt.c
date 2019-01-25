@@ -471,6 +471,13 @@ void Trigger_VIInterrupt(void)
 		}
 	}
 
+	// safety check, the value of viCountPerSecond should not be very high, otherwise
+	// the emulator must have been looped
+	if( viCountePerSecond > 400 )
+	{
+		Sleep(2);	// Allow other threads to run
+	}
+
 	/* Speed Sync */
 	if(currentromoptions.Max_FPS != MAXFPS_NONE && emuoptions.SyncVI)
 	{
@@ -545,6 +552,10 @@ void Trigger_VIInterrupt(void)
 		CodeList_ApplyAllCode(INGAME);
 #endif
 	}
+	
+	/* Apply the PD 60fps timing hack */
+	if(emuoptions.PDSpeedHack && emuoptions.OverclockFactor != 1)
+		PDTimingHack();
 
 	/* set the interrupt to fire */
 	(MI_INTR_REG_R) |= MI_INTR_VI;

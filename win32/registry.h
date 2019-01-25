@@ -40,6 +40,6 @@ typedef struct
 
 RegSettingsTyp	gRegSettings;
 
-extern void		ReadConfiguration(void);
+extern int		ReadConfiguration(void);
 extern void		WriteConfiguration(void);
 #endif

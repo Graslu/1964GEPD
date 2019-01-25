@@ -48,6 +48,7 @@ struct EmuStatus
 	enum GAME_STOP_REASON	reason_to_stop;
 	int						action_after_resume;
 	volatile BOOL			Emu_Keep_Running;
+	int						gepd_pause;
 };
 extern struct EmuStatus emustatus;
 
@@ -59,6 +60,9 @@ struct EmuOptions
 	BOOL	dma_in_segments;
 	BOOL	SyncVI;
 	BOOL	UsingRspPlugin;
+	int		OverclockFactor;
+	BOOL	PDSpeedHack;
+	BOOL	PDSpeedHackBoost;
 };
 extern struct EmuOptions	emuoptions;
 

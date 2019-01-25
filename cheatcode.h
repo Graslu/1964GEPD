@@ -27,7 +27,7 @@
 #define MAX_CHEATCODE_GROUP_PER_ROM 254	//Cannot exceed 254 groups, must be represented by using 1 byte
 
 //Option to apply cheat code and lock memory
-#define CHEATCODE_LOCK_MEMORY
+//#define CHEATCODE_LOCK_MEMORY
 
 enum APPLYCHEATMODE { INGAME, BOOTUPONCE, GSBUTTON, ONLYIN1964 };
 

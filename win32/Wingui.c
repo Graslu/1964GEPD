@@ -27,6 +27,7 @@
 #include <shlobj.h>
 #include "wingui.h"
 #include <shellapi.h>
+#include "../globals.h"
 #include "../debug_option.h"
 #include "../hardware.h"
 #include "../fileio.h"
@@ -90,10 +91,11 @@ int					game_country_tvsystem = 0;
 int					Audio_Is_Initialized = 0;
 int					timer;
 int					StateFileNumber = 1;
-int					ShowMouse = 1;
+int					togglecursor = FALSE;
+int					firstlaunch1964 = 1;
 
 extern int			selected_rom_index;
-extern BOOL			Is_Reading_Rom_File;;
+extern BOOL			Is_Reading_Rom_File;
 extern BOOL			To_Stop_Reading_Rom_File;
 extern BOOL			opcode_debugger_memory_is_allocated;
 extern HINSTANCE	hinstControllerPlugin;
@@ -139,14 +141,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime)
 		{
 			if(!emustatus.Emu_Is_Paused)
 			{
-				if(GetVersion() < 0x80000000)	/* Windows NT */
-				{
-					vips = (vips * 0.5f + 0.5f * viCountePerSecond);
-				}
-				else
-				{
-					vips = (vips * 0.8f + 0.2f * viCountePerSecond);
-				}
+				vips = (float)(viCountePerSecond);
 
 				if(vips >= 100.0)
 				{
@@ -193,9 +188,19 @@ void CALLBACK TimerProc(HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime)
 					CodeList_ApplyAllCode(INGAME);
 #endif
 				}
+				if(emuoptions.PDSpeedHack && emuoptions.OverclockFactor != 1 && (!strcmp(currentromoptions.Game_Name, "Perfect Dark") || !strcmp(currentromoptions.Game_Name, "GoldenEye X") || strstr(currentromoptions.Game_Name, "Perfect")))
+					PDSpeedHack();
+				if(emustatus.gepd_pause)
+				{
+					emustatus.gepd_pause--;
+					if(!emustatus.gepd_pause)
+						GEPDPause(FALSE);
+				}
 			}
 		}
 	}
+	if(mouseinjectorpresent)
+		CONTROLLER_HookRDRAM((DWORD *)TLB_sDWord_ptr, emuoptions.OverclockFactor);
 }
 
 LRESULT APIENTRY PropertyPagesProc(HWND hDlg, unsigned message, WORD wParam, LONG lParam)
@@ -330,7 +335,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 	Set_1964_Directory();
 	LoadDllKaillera();
 	kailleraInit();
-	ReadConfiguration();			/* System registry settings */
+	firstlaunch1964 = ReadConfiguration();	/* System registry settings */
 
 	gui.hwnd1964main = InitWin98UI(hInstance, nCmdShow);
 	if(gui.hwnd1964main == NULL)
@@ -341,7 +346,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 
 	SetupAdvancedMenus();
 	SetupDebuger();
-
+	if(guioptions.highfreqtimer)
+		SetHighResolutionTimer();
 	/*	
 		Loading Netplay DLL, this must be done after loading the controller DLL because
 		netplay DLL will be using the controller DLL
@@ -387,9 +393,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 	SetWindowText(gui.hwnd1964main, gui.szBaseWindowTitle);
 	emustatus.cpucore = defaultoptions.Emulator;
 
-	SetStatusBarText(3, defaultoptions.RDRAM_Size == RDRAMSIZE_4MB ? "4MB" : "8MB");
-	SetStatusBarText(4, "D");
 	SetStatusBarText(2, "CF=1");
+	SetStatusBarText(3, "8MB");
+	SetStatusBarText(4, "D");
 
 	gui.hwndRomList = NewRomList_CreateListViewControl(gui.hwnd1964main);	/* this must be before the video plugin init */
 	SetStatusBarText(0, "Loading plugins");
@@ -447,6 +453,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 
 	SetFocus(gui.hwnd1964main);
 	//CreateOptionsDialog();
+	if(firstlaunch1964) // open the change ROM directory dialog window on first launch
+		ChangeDirectory();
 
 
 _HOPPITY:
@@ -494,7 +502,7 @@ HWND InitWin98UI(HANDLE hInstance, int nCmdShow)
 		(
 			"WinGui",
 			gui.szBaseWindowTitle,
-			WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,	/* | WS_VSCROLL, */
+			WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN,	/* | WS_VSCROLL, */
 			guistatus.window_position.left,
 			guistatus.window_position.top,
 			guistatus.clientwidth,
@@ -518,10 +526,11 @@ HWND InitWin98UI(HANDLE hInstance, int nCmdShow)
 	gui.hMenu1964main = GetMenu(gui.hwnd1964main);
 
 	if(!IsKailleraDllLoaded()) EnableMenuItem(gui.hMenu1964main, ID_KAILLERA_MODE, MF_GRAYED);
+	SetOverclockFactor(emuoptions.OverclockFactor);
+	SetCounterFactor(defaultoptions.Counter_Factor);
 
 	return gui.hwnd1964main;
 }
-
 
 void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -540,14 +549,20 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			ChangeButtonState(ID_BUTTON_PAUSE);
 			PlayButtonState = ChangeButtonState(ID_BUTTON_PLAY);
 			if((PlayButtonState &0x01) != TBSTATE_CHECKED)
+			{
 				PauseEmulator();
+				HideCursor(FALSE);
+			}
 			else
+			{
 				ResumeEmulator(DO_NOTHING_AFTER_PAUSE);
+				HideCursor(TRUE);
+			}
 			break;
 		case ID_BUTTON_PLAY:
 			ResumeEmulator(DO_NOTHING_AFTER_PAUSE);
 			break;
-		case ID_BUTTON_PAUSE:	
+		case ID_BUTTON_PAUSE:
 			PauseEmulator();
 			break;
 		case ID_CPU_KILL:
@@ -646,6 +661,7 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				PauseEmulator();
 				//SuspendThread(CPUThreadHandle);
+				HideCursor(FALSE);
 				DialogBox(gui.hInst, "CHEAT_HACK", hWnd, (DLGPROC) CheatAndHackDialog);
 				//ResumeThread(CPUThreadHandle);
 				ResumeEmulator(DO_NOTHING_AFTER_PAUSE);
@@ -680,19 +696,21 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if (!guistatus.IsFullScreen)
 			{
 				if(emustatus.Emu_Is_Running)
-			{
-				/* SuspendThread(CPUThreadHandle); */
-				VIDEO_DllConfig(hWnd);
+				{
+					/* SuspendThread(CPUThreadHandle); */
+					HideCursor(FALSE);
+					VIDEO_DllConfig(hWnd);
 
-				/* ResumeThread(CPUThreadHandle); */
-			}
-			else
-			{
-				VIDEO_DllConfig(hWnd);
-				NewRomList_ListViewChangeWindowRect();
-			}
+					/* ResumeThread(CPUThreadHandle); */
+				}
+				else
+				{
+					HideCursor(FALSE);
+					VIDEO_DllConfig(hWnd);
+					NewRomList_ListViewChangeWindowRect();
+				}
 
-			DockStatusBar();
+				DockStatusBar();
 			}
 			break;
 		case ID_AUD_CONFIG:
@@ -700,11 +718,13 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if(emustatus.Emu_Is_Running)
 			{
 				SuspendThread(CPUThreadHandle);
+				HideCursor(FALSE);
 				AUDIO_DllConfig(hWnd);
 				ResumeThread(CPUThreadHandle);
 			}
 			else
 			{
+				HideCursor(FALSE);
 				AUDIO_DllConfig(hWnd);
 			}
 			break;
@@ -713,12 +733,13 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if(emustatus.Emu_Is_Running)
 			{
 				/* SuspendThread(CPUThreadHandle); */
+				HideCursor(FALSE);
 				CONTROLLER_DllConfig(hWnd);
-
 				/* ResumeThread(CPUThreadHandle); */
 			}
 			else
 			{
+				HideCursor(FALSE);
 				CONTROLLER_DllConfig(hWnd);
 			}
 			break;
@@ -796,18 +817,17 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_FULLSCREEN:
 			if(emustatus.Emu_Is_Running)
 			{
-				if(PauseEmulator())
-				{
-					VIDEO_ChangeWindow(guistatus.IsFullScreen);
+				if(emustatus.Emu_Is_Paused && !guistatus.IsFullScreen)
 					ResumeEmulator(DO_NOTHING_AFTER_PAUSE);
-				}
+				VIDEO_ChangeWindow(guistatus.IsFullScreen);
 			}
 			break;
 		case ID_PLUGINS_SCREENSHOTS:
 			CaptureScreenToFile();
 			break;
-		case ID_SHOWMOUSE:
-			ShowCursor(!emustatus.Emu_Is_Running);
+		case ID_TOGGLECURSOR:
+			if(emustatus.Emu_Is_Running)
+				HideCursor(showcursor);
 			break;
 		case IDM_PLUGINS:
 		case ID_BUTTON_SETUP_PLUGINS:
@@ -825,6 +845,46 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case ID_HELP_FINDER:
 			DisplayError("Help contents");
+			break;
+		case ID_OVERCLOCKSTOCK:
+			SetOverclockFactor(1);
+			SetCounterFactor(currentromoptions.Counter_Factor);
+			break;
+		case ID_OVERCLOCK6:
+		case ID_OVERCLOCK9:
+		case ID_OVERCLOCK12:
+		case ID_OVERCLOCK15:
+		case ID_OVERCLOCK18:
+			SetOverclockFactor((LOWORD(wParam) - ID_OVERCLOCK6 + 2) * 3);
+			SetCounterFactor(COUTERFACTOR_1);
+			break;
+		case ID_PDSPEEDHACK:
+			if(emuoptions.PDSpeedHack)
+			{
+				CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACK, MF_UNCHECKED);
+				emuoptions.PDSpeedHack = FALSE;
+			}
+			else
+			{
+				CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACK, MF_CHECKED);
+				emuoptions.PDSpeedHack = TRUE;
+			}
+			emuoptions.PDSpeedHackBoost = FALSE;
+			CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, MF_UNCHECKED);
+			EnableMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, emuoptions.PDSpeedHack && emuoptions.OverclockFactor != 1 ? MF_ENABLED : MF_GRAYED);
+			break;
+		case ID_PDSPEEDHACKBOOST:
+			if(emuoptions.PDSpeedHackBoost)
+			{
+				CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, MF_UNCHECKED);
+				emuoptions.PDSpeedHackBoost = FALSE;
+			}
+			else
+			{
+				CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, MF_CHECKED);
+				emuoptions.PDSpeedHackBoost = TRUE;
+				MessageBox(gui.hwnd1964main, "The PD Speed-Hack can be unstable when injected too quickly.\nIf you experience clock skips or instant deaths with PD, turn off\nBoost Speed-Hack Freq.", "Information", MB_ICONINFORMATION | MB_OK);
+			}
 			break;
 		case ID_ABOUT_WARRANTY:
 			if (!guistatus.IsFullScreen)
@@ -1484,7 +1544,7 @@ void Stop()
 			{
 				VIDEO_ChangeWindow(guistatus.IsFullScreen);
 			}
-			ShowCursor(TRUE);
+			HideCursor(FALSE);
 			AfterStop();
 		}
 	}
@@ -1719,7 +1779,7 @@ void CloseROM(void)
 
 		SetWindowText(gui.hwnd1964main, gui.szBaseWindowTitle);
 	}
-	ShowCursor(TRUE);
+	HideCursor(FALSE);
 	/*
 	 * else
 	 * DisplayError("Please load a ROM first.");
@@ -1861,12 +1921,16 @@ BOOL WinLoadRomStep2(char *szFileName)
 
 BOOL StartGameByCommandLine()
 {
-	char szFileName[300];
+	char szFileName[300], temp[300];
 	GetCmdLineParameter(CMDLINE_GAME_FILENAME, szFileName);
 	if( strlen(szFileName) == 0 )
 	{
 		return FALSE;
 	}
+	strcpy(temp, directories.last_rom_directory);
+	strcat(temp, "\\");
+	strcat(temp, szFileName);
+	strcpy(szFileName, temp);
 
 	if(WinLoadRomStep2(szFileName))
 	{
@@ -1916,6 +1980,34 @@ BOOL StartGameByCommandLine()
  =======================================================================================================================
  =======================================================================================================================
  */
+void SetHighResolutionTimer(void)
+{
+	LONG (NTAPI *_NtQueryTimerResolution) (unsigned long *minimumResolution, unsigned long *maximumResolution, unsigned long *currentResolution) = NULL;
+	LONG (NTAPI *_NtSetTimerResolution) (unsigned long desiredResolution, BOOL setResolution, unsigned long *currentResolution) = NULL;
+	unsigned long minResolution = 0U, maxResolution = 0U, curResolution = 0U;
+	HINSTANCE hinstNTDLL = NULL;
+	hinstNTDLL = LoadLibrary("ntdll.dll");
+	if(hinstNTDLL != NULL)
+	{
+		_NtQueryTimerResolution = (LONG(NTAPI *) (unsigned long *minimumResolution, unsigned long *maximumResolution, unsigned long *currentResolution)) GetProcAddress(hinstNTDLL, "NtQueryTimerResolution");
+		_NtSetTimerResolution = (LONG(NTAPI *) (unsigned long desiredResolution, BOOL setResolution, unsigned long *currentResolution)) GetProcAddress(hinstNTDLL, "NtSetTimerResolution");
+		if(_NtSetTimerResolution != NULL && _NtQueryTimerResolution != NULL)
+		{
+			_NtQueryTimerResolution(&minResolution, &maxResolution, &curResolution);
+			_NtSetTimerResolution(maxResolution, TRUE, &curResolution);
+		}
+		else
+			DisplayError("Error: Could not increase Kernel Timing resolution");
+		FreeLibrary(hinstNTDLL);
+	}
+	else
+		DisplayError("Could not load ntdll.dll");
+}
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
 void OpenRecentGame(int id)
 {
 	if(emustatus.Emu_Is_Running) return;
@@ -1959,7 +2051,7 @@ void OpenRecentGame(int id)
  */
 void SaveState(void)
 {
-	if(Rom_Loaded)
+	if(Rom_Loaded && !emustatus.gepd_pause)
 	{
 		if(emustatus.Emu_Is_Running)
 		{
@@ -1992,7 +2084,7 @@ void LoadState(void)
 	int was_running = FALSE;
 	/*~~~~~~~~~~~~~~~~~~~~*/
 
-	if(Rom_Loaded)
+	if(Rom_Loaded && !emustatus.gepd_pause)
 	{
 		if(emustatus.Emu_Is_Running)
 		{
@@ -2012,6 +2104,7 @@ void LoadState(void)
 			FileIO_gzLoadState();
 			Init_Count_Down_Counters();
 		}
+		GEPDPause(TRUE);
 	}
 }
 
@@ -2054,6 +2147,8 @@ void StateSetNumber(int number)
 	StateFileNumber = number;
 	CheckMenuItem(gui.hMenu1964main, statesavemenulist[StateFileNumber], MF_CHECKED);
 	CheckMenuItem(gui.hMenu1964main, stateloadmenulist[StateFileNumber], MF_CHECKED);
+	sprintf(generalmessage, "%s - Selected State Slot %d", gui.szWindowTitle, number);
+	SetStatusBarText(0, generalmessage);
 }
 
 /*
@@ -2576,6 +2671,22 @@ LRESULT APIENTRY OptionsDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 		SendDlgItemMessage
 		(
 			hDlg,
+			IDC_DISPLAY_STATUSBAR,
+			BM_SETCHECK,
+			guioptions.display_statusbar ? BST_CHECKED : BST_UNCHECKED,
+			0
+		);
+		SendDlgItemMessage
+		(
+			hDlg,
+			IDC_HIGHFREQTIMER,
+			BM_SETCHECK,
+			guioptions.highfreqtimer ? BST_CHECKED : BST_UNCHECKED,
+			0
+		);
+		SendDlgItemMessage
+		(
+			hDlg,
 			IDC_ENABLE_STATE_MENU,
 			BM_SETCHECK,
 			guioptions.show_state_selector_menu ? BST_CHECKED : BST_UNCHECKED,
@@ -2763,6 +2874,17 @@ LRESULT APIENTRY OptionsDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 
 				guioptions.display_detail_status = (SendDlgItemMessage(hDlg, IDC_ENABLE_DETAIL_STATUS, BM_GETCHECK, 0, 0) == BST_CHECKED);
 				guioptions.display_profiler_status = (SendDlgItemMessage(hDlg, IDC_ENABLE_PROFILER, BM_GETCHECK, 0, 0) == BST_CHECKED);
+				if(SendDlgItemMessage(hDlg, IDC_DISPLAY_STATUSBAR, BM_GETCHECK, 0, 0) == BST_CHECKED)
+				{
+					ShowWindow(gui.hToolBar, SW_SHOW);
+					ShowWindow(gui.hStatusBar, SW_SHOW);
+				}
+				else
+					ShowWindow(gui.hStatusBar, SW_HIDE);
+				if(guioptions.highfreqtimer != SendDlgItemMessage(hDlg, IDC_HIGHFREQTIMER, BM_GETCHECK, 0, 0))
+					MessageBox(gui.hwnd1964main, "Please restart 1964 to apply high frequency settings.", "User Options", MB_OK);
+				guioptions.highfreqtimer = (SendDlgItemMessage(hDlg, IDC_HIGHFREQTIMER, BM_GETCHECK, 0, 0) == BST_CHECKED);
+				guioptions.display_statusbar = (SendDlgItemMessage(hDlg, IDC_DISPLAY_STATUSBAR, BM_GETCHECK, 0, 0) == BST_CHECKED);
 				guioptions.use_default_save_directory = (SendDlgItemMessage(hDlg, IDC_OPTIONS_USE_DEFAULT_SAVE_DIRECTORY, BM_GETCHECK, 0, 0) == BST_CHECKED);
 				guioptions.use_default_plugin_directory =
 					(
@@ -2819,26 +2941,146 @@ LRESULT APIENTRY OptionsDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
  =======================================================================================================================
  =======================================================================================================================
  */
+void SetOverclockFactor(int factor)
+{
+	int ocmenuid = ID_OVERCLOCK6;
+	int cfmenuid = ID_CF_CF1;
+	CheckMenuItem(gui.hMenu1964main, ID_OVERCLOCKSTOCK, factor == 1 ? MF_CHECKED : MF_UNCHECKED);
+	while(ocmenuid <= ID_OVERCLOCK18)
+	{
+		if((LOWORD(ocmenuid) - ID_OVERCLOCK6 + 2) * 3 != factor)
+			CheckMenuItem(gui.hMenu1964main, ocmenuid, MF_UNCHECKED);
+		else
+			CheckMenuItem(gui.hMenu1964main, ocmenuid, MF_CHECKED);
+		ocmenuid++;
+	}
+	while(cfmenuid <= ID_CF_CF8)
+	{
+		if(factor != 1)
+			EnableMenuItem(gui.hMenu1964main, cfmenuid, MF_GRAYED);
+		else
+			EnableMenuItem(gui.hMenu1964main, cfmenuid, MF_ENABLED);
+		cfmenuid++;
+	}
+	if(!emustatus.gepd_pause)
+		GEPDPause(TRUE);
+	else
+		emustatus.gepd_pause = 2;
+	emuoptions.OverclockFactor = factor;
+	EnableMenuItem(gui.hMenu1964main, ID_PDSPEEDHACK, factor != 1 ? MF_ENABLED : MF_GRAYED);
+	EnableMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, emuoptions.PDSpeedHack && factor != 1 ? MF_ENABLED : MF_GRAYED);
+	CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACK, emuoptions.PDSpeedHack && factor != 1 ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, emuoptions.PDSpeedHack && emuoptions.PDSpeedHackBoost && factor != 1 ? MF_CHECKED : MF_UNCHECKED);
+	if(mouseinjectorpresent)
+		CONTROLLER_HookRDRAM((DWORD *)TLB_sDWord_ptr, factor);
+}
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
 void SetCounterFactor(int factor)
 {
+	if(emuoptions.OverclockFactor != 1 || factor < COUTERFACTOR_1 || factor > COUTERFACTOR_8)
+		factor = COUTERFACTOR_1;
 	if(CounterFactor != factor)
 	{
 		CheckMenuItem(gui.hMenu1964main, cfmenulist[CounterFactor - 1], MF_UNCHECKED);
+		CounterFactor = factor;
 		if(emustatus.Emu_Is_Running)
 		{
+			Init_Count_Down_Counters();
 			if(PauseEmulator())
-			{
-				CounterFactor = factor;
 				ResumeEmulator(REFRESH_DYNA_AFTER_PAUSE);	/* Need to init emu */
-			}
 		}
 
-		CounterFactor = factor;
 		CheckMenuItem(gui.hMenu1964main, cfmenulist[CounterFactor - 1], MF_CHECKED);
 		sprintf(generalmessage, "CF=%d", factor);
 		SetStatusBarText(2, generalmessage);
 	}
 }
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+
+#define PD_tickrate 0x80099FC0 // game loop's tickrate (used to detect when PD is running at lower framerate - PD was designed to halve game tickrate when detected bottlenecks)
+#define PD_timer 0x8008DBD0 // we intentionally screw with this timer address to force PD to run at unlocked speed
+#define PD_mpspeed 0x800ACB91 // used to check if the match is set to slow motion or normal speed
+#define PD_masterclock 0x8038CECC // location of master clock code (TLB'd to 7F)
+#define PD_newcodearea 0x803C78E0 // free area to write new timing code for 60fps mode
+#define PD_newcodearealastcode 0x803C7964 // used to check if memory is safe to write
+
+static const unsigned int codearray[34] = {0x3C028006, 0x8C42EE10, 0x240E0007, 0x51C2000E, 0x3C02800A, 0x3C02800B, 0x8042CB97, 0x304E0080, 0x15C00017, 0x304E0040, 0x11C00012, 0x3C02800A, 0x8C42A424, 0x14400012, 0x00000000, 0x10000010, 0x00129040, 0x00000000, 0x804221D3, 0x30420040, 0x10400007, 0x00000000, 0x3C02800A, 0x8C42A424, 0x14400007, 0x00000000, 0x10000005, 0x00129040, 0x3C02800A, 0x8C42A424, 0x54400001, 0x00129040, 0x0BC5B3B5, 0x3631EBC2}; // hijack timing code to allow combat boost at 60fps
+
+void PDTimingHack(void)
+{
+	int codeindex;
+	if(LOAD_UWORD_PARAM(PD_masterclock) == 0x3652FAF0 && LOAD_UWORD_PARAM(PD_newcodearealastcode) == 0x73666572) // inject new timing code
+	{
+		for(codeindex = 0; codeindex < 34; codeindex++)
+			LOAD_UWORD_PARAM(PD_newcodearea + codeindex * 4) = codearray[codeindex];
+		LOAD_UWORD_PARAM(PD_masterclock) = 0x0BC69E38;
+		LOAD_UWORD_PARAM(PD_masterclock + 4) = 0x3652FAF0;
+	}
+}
+
+void PDSpeedHack(void)
+{
+	int bruteforce;
+	if(LOAD_SWORD_PARAM(PD_tickrate) == 2 && (LOAD_UWORD_PARAM(PD_mpspeed) & 0x80) != 0x80) // if PD is running at 30fps and mp slow motion setting is not set to smart
+	{
+		for(bruteforce = 0; bruteforce < (emuoptions.PDSpeedHackBoost ? 48 : 24); bruteforce++)
+			LOAD_UWORD_PARAM(PD_timer) = 0x00000000; // trick the system into thinking there is plenty of room left to run at full speed
+		Sleep(emuoptions.PDSpeedHackBoost ? 8 : 4);
+		LOAD_UWORD_PARAM(PD_timer) = 0x00010000; // set clock back to default (reset fps lock to 60)
+	}
+}
+
+#undef PD_tickrate
+#undef PD_timer
+#undef PD_mpspeed
+#undef PD_masterclock
+#undef PD_newcodearea
+#undef PD_newcodearealastcode
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+
+#define GE_pause 0x80048370 // pause flag (1 = GE is paused)
+#define PD_pause 0x80084014 // menu flag (1 = PD is paused)
+
+static BOOL alreadypaused = FALSE;
+
+void GEPDPause(BOOL pause)
+{
+	int game;
+	if(!strcmp(currentromoptions.Game_Name, "GOLDENEYE") || strstr(currentromoptions.Game_Name, "GOLD"))
+		game = 0;
+	else if(!strcmp(currentromoptions.Game_Name, "Perfect Dark") || !strcmp(currentromoptions.Game_Name, "GoldenEye X") || strstr(currentromoptions.Game_Name, "Perfect"))
+		game = 1;
+	else return;
+	if(pause)
+	{
+		emustatus.gepd_pause = 2;
+		if(!LOAD_UWORD_PARAM(!game ? GE_pause : PD_pause))
+			LOAD_UWORD_PARAM(!game ? GE_pause : PD_pause) = 1;
+		else
+			alreadypaused = TRUE, emustatus.gepd_pause = 1;
+	}
+	else
+	{
+		if(!alreadypaused)
+			LOAD_UWORD_PARAM(!game ? GE_pause : PD_pause) = 0;
+		alreadypaused = FALSE;
+	}
+}
+
+#undef GE_pause
+#undef PD_pause
 
 /*
  =======================================================================================================================
@@ -2928,13 +3170,16 @@ void PrepareBeforePlay(int IsFullScreen)
 	/* Setting options */
 	RomListSelectLoadedRomEntry();
 	GenerateCurrentRomOptions();
+	if(!strcmp(currentromoptions.Game_Name, "GOLDENEYE") || strstr(currentromoptions.Game_Name, "GOLD"))
+		emuoptions.UsingRspPlugin = TRUE;
+	else if(!strcmp(currentromoptions.Game_Name, "Perfect Dark") || !strcmp(currentromoptions.Game_Name, "GoldenEye X") || strstr(currentromoptions.Game_Name, "Perfect"))
+		emuoptions.UsingRspPlugin = FALSE;
 	init_whole_mem_func_array();					/* Needed here. The tlb function pointers change. */
 	ResetRdramSize(currentromoptions.RDRAM_Size);
 	if(strcpy(current_cheatcode_rom_internal_name, currentromoptions.Game_Name) != 0)
 		CodeList_ReadCode(currentromoptions.Game_Name);
 
-	CounterFactor = currentromoptions.Counter_Factor;
-	sprintf(generalmessage, "CF=%d", currentromoptions.Counter_Factor);
+	SetCounterFactor(currentromoptions.Counter_Factor);
 	emustatus.CodeCheckMethod = currentromoptions.Code_Check;
 
 	/*
@@ -3000,12 +3245,11 @@ void PrepareBeforePlay(int IsFullScreen)
 	}
 	if (IsFullScreen == 0)
 	{
-	CheckMenuItem(gui.hMenu1964main, cfmenulist[CounterFactor - 1], MF_UNCHECKED);
-	CheckMenuItem(gui.hMenu1964main, cfmenulist[CounterFactor - 1], MF_CHECKED);
-	SetStatusBarText(2, generalmessage);
-	CheckMenuItem(gui.hMenu1964main, codecheckmenulist[emustatus.CodeCheckMethod - 1], MF_UNCHECKED);
-	CheckMenuItem(gui.hMenu1964main, codecheckmenulist[emustatus.CodeCheckMethod - 1], MF_CHECKED);
-	SetStatusBarText(4, emustatus.cpucore == DYNACOMPILER ? "D" : "I");
+		CheckMenuItem(gui.hMenu1964main, codecheckmenulist[emustatus.CodeCheckMethod - 1], MF_UNCHECKED);
+		CheckMenuItem(gui.hMenu1964main, codecheckmenulist[emustatus.CodeCheckMethod - 1], MF_CHECKED);
+		sprintf(generalmessage, "CF=%d", emuoptions.OverclockFactor == 1 ? currentromoptions.Counter_Factor : 1);
+		SetStatusBarText(2, generalmessage);
+		SetStatusBarText(4, emustatus.cpucore == DYNACOMPILER ? "D" : "I");
 	}
 }
 
@@ -3064,8 +3308,11 @@ void AfterStop(void)
 	SetCodeCheckMethod(defaultoptions.Code_Check);
 
 	/* Flash the status bar */
-	ShowWindow(gui.hStatusBar, SW_HIDE);
-	ShowWindow(gui.hStatusBar, SW_SHOW);
+	if(guioptions.display_statusbar)
+	{
+		ShowWindow(gui.hStatusBar, SW_HIDE);
+		ShowWindow(gui.hStatusBar, SW_SHOW);
+	}
 	SetStatusBarText(3, defaultoptions.RDRAM_Size == RDRAMSIZE_4MB ? "4MB" : "8MB");
 
 	sprintf(generalmessage, "%s - Stopped", gui.szWindowTitle);
@@ -3121,6 +3368,7 @@ void DockStatusBar(void)
 	ShowWindow(gui.hStatusBar, SW_SHOW);
 
 	InitStatusBarParts();
+	ShowWindow(gui.hStatusBar, guistatus.IsFullScreen || !guioptions.display_statusbar ? SW_HIDE : SW_SHOW);
 }
 
 /*
@@ -3607,7 +3855,7 @@ void CaptureScreenToFile(void)
 			/*~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 			strcpy(directory, directories.main_directory);
-			strcat(directory, "Screens\\");
+			strcat(directory, "screens\\");
 			VIDEO_CaptureScreen(directory);
 		}
 	}

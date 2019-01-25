@@ -193,7 +193,7 @@ BOOL CodeList_ReadCode(char *intername_rom_name)
 		}
 
 		/* Allocate memory for groups */
-		codegrouplist = VirtualAlloc(NULL, numberofgroups * sizeof(CODEGROUP), MEM_COMMIT, PAGE_READWRITE);
+		codegrouplist = (CODEGROUP*)VirtualAlloc(NULL, numberofgroups * sizeof(CODEGROUP), MEM_COMMIT, PAGE_READWRITE);
 		if(codegrouplist == NULL)
 		{
 			DisplayError("Cannot allocate memory to load cheat codes");
@@ -314,41 +314,43 @@ BOOL CodeList_SaveCode(void)
 	stream = fopen(codefilepath, "rt");
 	if(stream != NULL)
 	{
-		while(fgets(line, 2048, stream))
-		{
-			chopm(line);
-			if(strcmp(line, romname) == 0 && found == FALSE)
+		char* res;
+
+		do 	{
+			res = fgets(line, 2048, stream);
+			if( res ) chopm(line);
+			if( (strcmp(line, romname) == 0 || !res ) && found == FALSE)
 			{
 				found = TRUE;
-	fprintf(stream2, "[%s]\n", current_cheatcode_rom_internal_name);
-	fprintf(stream2, "NumberOfGroups=%d\n", codegroupcount);
+				fprintf(stream2, "[%s]\n", current_cheatcode_rom_internal_name);
+				fprintf(stream2, "NumberOfGroups=%d\n", codegroupcount);
 				for(c1 = 0; c1 < codegroupcount; c1++) // write cheats to file
-	{
-		if(codegrouplist[c1].country == 0)
-			fprintf(stream2, "%s=", codegrouplist[c1].name);
-		else
-		{
-			fprintf(stream2, "%s,%d=", codegrouplist[c1].name, codegrouplist[c1].country);
-		}
+				{
+					if(codegrouplist[c1].country == 0)
+						fprintf(stream2, "%s=", codegrouplist[c1].name);
+					else
+					{
+						fprintf(stream2, "%s,%d=", codegrouplist[c1].name, codegrouplist[c1].country);
+					}
 
-		if(strlen(codegrouplist[c1].note) > 0)
-		{
-			fprintf(stream2, "\"%s\",%d,", codegrouplist[c1].note, codegrouplist[c1].active);
-		}
-		else
-		{
-			fprintf(stream2, "%d,", codegrouplist[c1].active);
-		}
+					if(strlen(codegrouplist[c1].note) > 0)
+					{
+						fprintf(stream2, "\"%s\",%d,", codegrouplist[c1].note, codegrouplist[c1].active);
+					}
+					else
+					{
+						fprintf(stream2, "%d,", codegrouplist[c1].active);
+					}
 
-		for(c2 = 0; c2 < codegrouplist[c1].codecount; c2++)
-		{
-			fprintf(stream2, "%08X-%04X,", codegrouplist[c1].codelist[c2].addr, codegrouplist[c1].codelist[c2].val);
-		}
+					for(c2 = 0; c2 < codegrouplist[c1].codecount; c2++)
+					{
+						fprintf(stream2, "%08X-%04X,", codegrouplist[c1].codelist[c2].addr, codegrouplist[c1].codelist[c2].val);
+					}
 
-		fprintf(stream2, "\n");
-	}
+					fprintf(stream2, "\n");
+				}
 
-	fprintf(stream2, "\n");
+				fprintf(stream2, "\n");
 
 				while(fgets(line, 2048, stream)) // continue to read original file until next game is found
 				{
@@ -364,7 +366,7 @@ BOOL CodeList_SaveCode(void)
 			{
 				fprintf(stream2, "%s\n", line);
 			}
-		}
+		}while(res);
 
 		fclose(stream);
 	}
@@ -541,7 +543,6 @@ BOOL CodeList_ApplyCode(int index, int mode)
 					}
 					break;
 				case ONLYIN1964:	/* Works in 1964 only */
-					switch(codetype)
 					{
 						if((codetype & 0xE0) == 0x00)	/* 1964 only code type */
 						{
@@ -578,7 +579,7 @@ BOOL CodeList_ApplyCode(int index, int mode)
 	}
 	else
 	{
-		DisplayError("Please start the game first before apply the code");
+		DisplayError("Please start the game first before applying the code.");
 		return FALSE;
 	}
 }
@@ -887,7 +888,7 @@ LRESULT APIENTRY CheatAndHackDialog(HWND hDlg, unsigned message, WORD wParam, LO
 						CODEGROUP	*newgrouplist = NULL;
 						/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-						newgrouplist = VirtualAlloc
+						newgrouplist = (CODEGROUP*)VirtualAlloc
 							(
 								NULL,
 								(codegroupcount + 1) * sizeof(CODEGROUP),
@@ -901,8 +902,11 @@ LRESULT APIENTRY CheatAndHackDialog(HWND hDlg, unsigned message, WORD wParam, LO
 						}
 						else
 						{
-							memcpy(newgrouplist, codegrouplist, codegroupcount * sizeof(CODEGROUP));
-							VirtualFree(codegrouplist, 0, MEM_RELEASE);
+							if( codegrouplist )
+							{
+								memcpy(newgrouplist, codegrouplist, codegroupcount * sizeof(CODEGROUP));
+								VirtualFree(codegrouplist, 0, MEM_RELEASE);
+							}
 							codegrouplist = newgrouplist;
 						}
 					}

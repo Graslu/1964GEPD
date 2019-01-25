@@ -90,29 +90,29 @@ BEGIN
         MENUITEM "Load State...",               ID_LOADSTATE, GRAYED
         POPUP "Save State\tF5"
         BEGIN
-            MENUITEM "State\t0",                    ID_SAVE_STATE_0, CHECKED
-            MENUITEM "State\t1",                    ID_SAVE_STATE_1, GRAYED
-            MENUITEM "State\t2",                    ID_SAVE_STATE_2, GRAYED
-            MENUITEM "State\t3",                    ID_SAVE_STATE_3, GRAYED
-            MENUITEM "State\t4",                    ID_SAVE_STATE_4, GRAYED
-            MENUITEM "State\t5",                    ID_SAVE_STATE_5, GRAYED
-            MENUITEM "State\t6",                    ID_SAVE_STATE_6, GRAYED
-            MENUITEM "State\t7",                    ID_SAVE_STATE_7, GRAYED
-            MENUITEM "State\t8",                    ID_SAVE_STATE_8, GRAYED
-            MENUITEM "State\t9",                    ID_SAVE_STATE_9, GRAYED
+            MENUITEM "State\tShift+1",             ID_SAVE_STATE_1, CHECKED
+            MENUITEM "State\tShift+2",             ID_SAVE_STATE_2, GRAYED
+            MENUITEM "State\tShift+3",             ID_SAVE_STATE_3, GRAYED
+            MENUITEM "State\tShift+4",             ID_SAVE_STATE_4, GRAYED
+            MENUITEM "State\tShift+5",             ID_SAVE_STATE_5, GRAYED
+            MENUITEM "State\tShift+6",             ID_SAVE_STATE_6, GRAYED
+            MENUITEM "State\tShift+7",             ID_SAVE_STATE_7, GRAYED
+            MENUITEM "State\tShift+8",             ID_SAVE_STATE_8, GRAYED
+            MENUITEM "State\tShift+9",             ID_SAVE_STATE_9, GRAYED
+            MENUITEM "State\tShift+0",             ID_SAVE_STATE_0, GRAYED
         END
         POPUP "Load State\tF7"
         BEGIN
-            MENUITEM "State\t0",                    ID_LOAD_STATE_0, CHECKED
-            MENUITEM "State\t1",                    ID_LOAD_STATE_1, GRAYED
-            MENUITEM "State\t2",                    ID_LOAD_STATE_2, GRAYED
-            MENUITEM "State\t3",                    ID_LOAD_STATE_3, GRAYED
-            MENUITEM "State\t4",                    ID_LOAD_STATE_4, GRAYED
-            MENUITEM "State\t5",                    ID_LOAD_STATE_5, GRAYED
-            MENUITEM "State\t6",                    ID_LOAD_STATE_6, GRAYED
-            MENUITEM "State\t7",                    ID_LOAD_STATE_7, GRAYED
-            MENUITEM "State\t8",                    ID_LOAD_STATE_8, GRAYED
-            MENUITEM "State\t9",                    ID_LOAD_STATE_9, GRAYED
+            MENUITEM "State\tShift+1",             ID_LOAD_STATE_1, CHECKED
+            MENUITEM "State\tShift+2",             ID_LOAD_STATE_2, GRAYED
+            MENUITEM "State\tShift+3",             ID_LOAD_STATE_3, GRAYED
+            MENUITEM "State\tShift+4",             ID_LOAD_STATE_4, GRAYED
+            MENUITEM "State\tShift+5",             ID_LOAD_STATE_5, GRAYED
+            MENUITEM "State\tShift+6",             ID_LOAD_STATE_6, GRAYED
+            MENUITEM "State\tShift+7",             ID_LOAD_STATE_7, GRAYED
+            MENUITEM "State\tShift+8",             ID_LOAD_STATE_8, GRAYED
+            MENUITEM "State\tShift+9",             ID_LOAD_STATE_9, GRAYED
+            MENUITEM "State\tShift+0",             ID_LOAD_STATE_0, GRAYED
         END
         MENUITEM "Import Project64 Save State...", ID_CPU_IMPORTPJ64STATE
         , GRAYED
@@ -168,7 +168,7 @@ BEGIN
         MENUITEM "&Video Settings ...\tCtrl+V", ID_VIDEO_CONFIG
         MENUITEM "&Audio Settings ...",         ID_AUD_CONFIG
         MENUITEM "&Input Settings ...\tCtrl+I", ID_DI_CONFIG
-        MENUITEM "RSP Plugin Settings ...\tCtrl+R", ID_RSP_CONFIG
+        MENUITEM "RSP Plugin Settings ...", ID_RSP_CONFIG
         MENUITEM SEPARATOR
         MENUITEM "Full Screen\tAlt+Enter",      IDM_FULLSCREEN
         MENUITEM "Screen Shot\tF12",            ID_PLUGINS_SCREENSHOTS
@@ -234,6 +234,19 @@ BEGIN
             MENUITEM "Debug SI Interrupts",         ID_DEBUGSIINTERRUPTS
         END
     END
+    POPUP "&Overclock"
+    BEGIN
+        MENUITEM "Stock",                       ID_OVERCLOCKSTOCK
+        MENUITEM SEPARATOR
+        MENUITEM "6 Times",                     ID_OVERCLOCK6
+        MENUITEM "9 Times",                     ID_OVERCLOCK9
+        MENUITEM "12 Times",                    ID_OVERCLOCK12
+        MENUITEM "15 Times",                    ID_OVERCLOCK15
+        MENUITEM "18 Times",                    ID_OVERCLOCK18
+		MENUITEM SEPARATOR
+        MENUITEM "PD Speed-Hack",               ID_PDSPEEDHACK
+        MENUITEM "Boost Speed-Hack Freq",       ID_PDSPEEDHACKBOOST
+    END
     POPUP "Net Play"
     BEGIN
         MENUITEM "Setting ...",                 ID_NETPLAY_CONFIG
@@ -245,7 +258,7 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "Help",                 ID_ONLINE_HELP
+        MENUITEM "Help",                        ID_ONLINE_HELP
         MENUITEM SEPARATOR
         MENUITEM "GPL Information...",          ID_REDISTRIBUTE
         MENUITEM "About Warranty...",           ID_ABOUT_WARRANTY
@@ -1258,7 +1271,7 @@ BEGIN
                     SS_SUNKEN,14,149,40,37,WS_EX_DLGMODALFRAME | 
                     WS_EX_TRANSPARENT | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE
     GROUPBOX        "RSP",IDC_STATIC,7,202,246,31,BS_CENTER
-    CONTROL         "Use RSP Plugin (Enable for GoldenEye 007/Disable for Perfect Dark)",
+    CONTROL         "Use RSP Plugin (Needed for GE, Tooie, LLE Audio, and JPEG)",
                     IDC_USE_RSP_PLUGIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     14,215,238,10
     GROUPBOX        "Input",IDC_STATIC,7,136,246,59,BS_CENTER
@@ -1354,7 +1367,7 @@ BEGIN
     GROUPBOX        "Enter New Code",IDC_STATIC_NEWCODEFRAME,238,5,155,318
     EDITTEXT        IDC_GAMESHARK_CODE,243,35,145,140,ES_MULTILINE | 
                     ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
-    LTEXT           "Name",1508,243,15,20,8
+    LTEXT           "Name",IDC_STATIC_CODENAME,243,15,20,8
     EDITTEXT        IDC_GAMESHARK_NAME,268,15,120,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Add/Modify",IDC_GAMESHARK_ADD,240,305,50,14
     LTEXT           "Note2",IDC_CHEAT_NOTE2,243,226,145,75
@@ -1382,6 +1395,9 @@ BEGIN
     CONTROL         "Pause ROM When Minimized",
                     IDC_DEFAULTOPTIONS_PAUSEWHENINACTIVE,"Button",
                     BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,12,18,121,10
+    CONTROL         "Set Maximum Kernel Frequency",
+                    IDC_HIGHFREQTIMER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,31,121,10
     CONTROL         "Recent ROM Folders",IDC_ENABLE_DIRECTORY_LIST,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,150,18,87,10
     CONTROL         "Save-State Slots",IDC_ENABLE_STATE_MENU,"Button",
@@ -1397,9 +1413,11 @@ BEGIN
     CONTROL         "Display Error Log Window",IDC_OPTION_ERROR_WINDOW,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,85,102,10
     CONTROL         "Virtual Machine Statistics",IDC_ENABLE_DETAIL_STATUS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,65,116,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,61,116,10
     CONTROL         "Real-time Profiler",IDC_ENABLE_PROFILER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,150,78,116,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,150,74,116,10
+    CONTROL         "Display Status Bar",IDC_DISPLAY_STATUSBAR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,150,87,73,8
     EDITTEXT        IDC_DEFAULTOPTIONS_ROMDIRECTORY,12,130,256,12,
                     ES_AUTOHSCROLL
     PUSHBUTTON      ">>>",IDC_DEFAULTOPTIONS_BUTTON_ROMDIR,272,131,26,10
@@ -1409,13 +1427,13 @@ BEGIN
     EDITTEXT        IDC_DEFAULTOPTIONS_SAVEDIRECTORY,12,175,256,12,
                     ES_AUTOHSCROLL
     PUSHBUTTON      ">>>",IDC_DEFAULTOPTIONS_BUTTON_SAVEDIR,272,176,26,10
-    CONTROL         "Use default: $1964.exe\\Save",
+    CONTROL         "Use default: $1964.exe\\save",
                     IDC_DEFAULTOPTIONS_USE1964STATESAVEDIRECTORY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,189,199,10
     EDITTEXT        IDC_DEFAULTOPTIONS_PLUGINDIRECTORY,12,219,256,12,
                     ES_AUTOHSCROLL
     PUSHBUTTON      ">>>",IDC_DEFAULTOPTIONS_BUTTON_PLUGINDIR,272,220,26,10
-    CONTROL         "Use default: $1964.exe\\Plugin",
+    CONTROL         "Use default: $1964.exe\\plugin",
                     IDC_DEFAULTOPTIONS_USE1964PLUGINDIRECTORY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,234,193,10
     DEFPUSHBUTTON   "OK",IDOK,101,257,50,14
@@ -1490,8 +1508,7 @@ BEGIN
     VK_F12,         ID_PLUGINS_SCREENSHOTS, VIRTKEY, NOINVERT
     "U",            ID_PREFERENCE_OPTIONS,  VIRTKEY, CONTROL, NOINVERT
     VK_F3,          ID_ROM_PAUSE,           VIRTKEY, NOINVERT
-    "R",            ID_RSP_CONFIG,          VIRTKEY, CONTROL, NOINVERT
-    VK_TAB,         ID_SHOWMOUSE,           VIRTKEY, NOINVERT
+    VK_TAB,         ID_TOGGLECURSOR,        VIRTKEY, NOINVERT
     "V",            ID_VIDEO_CONFIG,        VIRTKEY, CONTROL, NOINVERT
     VK_RETURN,      IDM_FULLSCREEN,         VIRTKEY, ALT, NOINVERT
     "P",            IDM_PLUGINS,            VIRTKEY, CONTROL, NOINVERT
@@ -1522,7 +1539,7 @@ BEGIN
         BEGIN
             VALUE "Comments", "Emulator for GoldenEye 007/Perfect Dark"
             VALUE "CompanyName", " "
-            VALUE "FileDescription", "GE/PD Edition"
+            VALUE "FileDescription", "1964 - GE/PD Edition"
             VALUE "FileVersion", "0, 8, 5, 0"
             VALUE "InternalName", "1964"
             VALUE "LegalCopyright", "Copyright © 1999-2002 Joel Middendorf"
@@ -1811,7 +1828,7 @@ END
 STRINGTABLE 
 BEGIN
     ID_BUTTON_FULL_SCREEN   "Full Screen (Alt+Enter)"
-    ID_BUTTON_ROM_PROPERTIES "ROM Properties (Ctrl+S)"
+    ID_BUTTON_ROM_PROPERTIES "ROM Properties"
     ID_BUTTON_OPEN_ROM      "Open (Ctrl+O)"
     ID_BUTTON_PLAY          "Play (F3)"
 END

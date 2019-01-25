@@ -21,6 +21,8 @@
  * authors: email: schibo@emulation64.com, rice1964@yahoo.com
  */
 #include "1964ini.h"
+#include "windows.h"
+#include "./win32/wingui.h"
 
 char			*CURRENT1964VERSION = "1964_085";
 uint32			gAllocationLength;
@@ -28,3 +30,32 @@ uint8			HeaderDllPass[0x40];
 volatile int	Rom_Loaded = 0;
 t_rominfo		rominfo;				/* Rom information */
 char			generalmessage[256];	/* general purpose buffer to display messages */
+int				showcursor = 1;
+
+/*
+ =======================================================================================================================
+    This function should be called if you want to change the cursor status £
+    as calling 'ShowCursor' multiple times will glitch and have issues so £
+    this prevents the multiple call problem
+ =======================================================================================================================
+ */
+void HideCursor(int state)
+{
+	if(state == TRUE)
+	{
+		if(showcursor)
+		{
+			ShowCursor(FALSE);
+			showcursor = 0;
+		}
+	}
+	else
+	{
+		if(!showcursor)
+		{
+			ShowCursor(TRUE);
+			showcursor = 1;
+		}
+	}
+	ShowWindow(gui.hStatusBar, guistatus.IsFullScreen || !guioptions.display_statusbar ? SW_HIDE : SW_SHOW);
+}

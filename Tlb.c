@@ -799,7 +799,7 @@ void InitTLBOther(void)
 {
 	/* some TLB hacks to speed up some games, but fails at others */
 	trigger_tlb_exception_faster = FALSE;
-	if(strncmp(currentromoptions.Game_Name, "GOLDENEYE", 9) == 0)
+	if(strncmp(currentromoptions.Game_Name, "GOLDENEYE", 9) == 0 || strstr(currentromoptions.Game_Name, "GOLD") != NULL)
 	{
 		/* Hack for golden eye, game still work without hack, but will be faster with hack */
 		if(rominfo.TV_System == TV_SYSTEM_NTSC)
@@ -808,7 +808,7 @@ void InitTLBOther(void)
 			uint32	i;
 			/*~~~~~~*/
 
-			for(i = 0; i < (gAllocationLength - 0x34b30) / 0x1000; i++)
+			for(i = 0; i < (gAllocationLength - 0x34b30) / 0x1000 && i < 0xFCB; i++)
 			{
 				Direct_TLB_Lookup_Table[0x7f000 + i] = 0x90034b30 + i * 0x1000;
 				TLB_sDWORD_R[0x7f000 + i] = &gMS_ROM_Image[0x34b30 + i * 0x1000];

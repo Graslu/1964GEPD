@@ -22,7 +22,9 @@
  * authors: email: schibo@emulation64.com, rice1964@yahoo.com
  */
 
+#include <stdio.h>
 #include "romlist.h"
+#include "win32/registry.h"
 
 uint32		ConvertHexCharToInt(char c);
 uint32		ConvertHexStringToInt(const char *str, int nchars);
@@ -46,7 +48,7 @@ char		*codecheck_type_names[] =
 };
 char		*maxfps_type_names[] = { "Default", "No Limit", "NTSC 60 fps", "PAL 50 fps", "Auto Sync" };
 char		*usetlb_type_names[] = { "Default", "Yes", "No" };
-char		*eepromsize_type_names[] = { "Default", "No EEPROM", "4Kb (GoldenEye)", "16Kb (Perfect Dark)" };
+char		*eepromsize_type_names[] = { "Default", "No EEPROM", "4Kb EEPROM", "16Kb EEPROM" };
 char		*counter_factor_names[] = { "Default", "CF=1", "CF=2", "CF=3", "CF=4", "CF=5", "CF=6", "CF=7", "CF=8", };
 char		*register_caching_names[] = { "Default", "Yes", "No" };
 char		*use_fpu_hack_names[] = { "Default", "Yes", "No" };
@@ -119,16 +121,16 @@ void GenerateCurrentRomOptions(void)
 	if(RomListSelectedEntry()->pinientry->Code_Check == 0) currentromoptions.Code_Check = defaultoptions.Code_Check;
 
 	if(RomListSelectedEntry()->pinientry->Eeprom_size == 0)
-		currentromoptions.Eeprom_size = EEPROMSIZE_4KB;
+		currentromoptions.Eeprom_size = defaultoptions.Eeprom_size;
 
 	if(RomListSelectedEntry()->pinientry->Emulator == 0) currentromoptions.Emulator = defaultoptions.Emulator;
 	if(RomListSelectedEntry()->pinientry->Max_FPS == 0) currentromoptions.Max_FPS = defaultoptions.Max_FPS;
-	if(RomListSelectedEntry()->pinientry->RDRAM_Size == 0) currentromoptions.RDRAM_Size = RDRAMSIZE_8MB;
-	if(RomListSelectedEntry()->pinientry->Save_Type == 0) currentromoptions.Save_Type = ANYUSED_SAVETYPE;
+	if(RomListSelectedEntry()->pinientry->RDRAM_Size == 0) currentromoptions.RDRAM_Size = defaultoptions.RDRAM_Size;
+	if(RomListSelectedEntry()->pinientry->Save_Type == 0) currentromoptions.Save_Type = defaultoptions.Save_Type;
 	if(RomListSelectedEntry()->pinientry->Use_TLB == 0) currentromoptions.Use_TLB = defaultoptions.Use_TLB;
 
 	if(RomListSelectedEntry()->pinientry->Counter_Factor == 0)
-		currentromoptions.Counter_Factor = COUTERFACTOR_1;
+		currentromoptions.Counter_Factor = defaultoptions.Counter_Factor;
 
 	if(RomListSelectedEntry()->pinientry->Use_Register_Caching == 0)
 		currentromoptions.Use_Register_Caching = defaultoptions.Use_Register_Caching;
@@ -149,6 +151,15 @@ void GenerateCurrentRomOptions(void)
 
 	if(RomListSelectedEntry()->pinientry->Use_HLE == 0) currentromoptions.Use_HLE = defaultoptions.Use_HLE;
 
+	if(!strcmp(rominfo.name, "GOLDENEYE") || strstr(rominfo.name, "GOLD") != NULL)
+		WriteProject64RDB(RomListSelectedEntry()->pinientry->crc1, RomListSelectedEntry()->pinientry->crc2, RomListSelectedEntry()->pinientry->countrycode);
+
+	if(!strcmp(rominfo.name, "Perfect Dark") || !strcmp(rominfo.name, "GoldenEye X") || strstr(rominfo.name, "Perfect") != NULL)
+	{
+		currentromoptions.Eeprom_size = EEPROMSIZE_16KB;
+		WriteProject64RDB(RomListSelectedEntry()->pinientry->crc1, RomListSelectedEntry()->pinientry->crc2, RomListSelectedEntry()->pinientry->countrycode);
+	}
+
 	if
 	(
 		RomListSelectedEntry()->pinientry->Code_Check != CODE_CHECK_PROTECT_MEMORY
@@ -166,6 +177,33 @@ void GenerateCurrentRomOptions(void)
 	}
 }
 
+/*
+ =======================================================================================================================
+    Scans Project64.rdb for GOLDENEYE\Perfect Dark\GoldenEye X settings
+    and if not found write new settings
+ =======================================================================================================================
+ */
+void WriteProject64RDB(const uint32 crc1, const uint32 crc2, const uint8 countrycode)
+{
+	/*~~~~~~~~~~~~~~*/
+	FILE *fp;
+	int found = 0;
+	char line[512], search_string[32];
+	/*~~~~~~~~~~~~~~*/
+
+	if(!strstr(gRegSettings.VideoPlugin, "Jabo")) /* if jabo isn't current video plugin, don't bother updating rdb file */
+		return;
+	sprintf(search_string, "[%08X-%08X-C:%02X]", crc1, crc2, countrycode);
+	if((fp = fopen("Project64.rdb", "a+")) != NULL)
+	{
+		while(!found && fgets(line, 512, fp) != NULL) /* read every line */
+			if(strstr(line, search_string)) /* setting exists exit function */
+				found = 1;
+		if(!found) /* write jabo settings at eof */
+			fprintf(fp, "\n\n[%08X-%08X-C:%02X]\nClear Frame=2\nCulling=1\nSelf Texture=0\nPrimary Frame Buffer=0\nEmulate Clear=0\n", crc1, crc2, countrycode);
+		fclose(fp);
+	}
+}
 /*
  =======================================================================================================================
     Initialize all pointers int the array

@@ -230,7 +230,7 @@
 #define ID_BUTTON_STOP                  337
 #define ID_BUTTON_SETUP_PLUGINS         338
 #define ID_BUTTON_HELP                  340
-#define ID_SHOWMOUSE                    343
+#define ID_TOGGLECURSOR                 342
 #define IDC_EDIT                        401
 #define IDC_CPUR0                       1000
 #define IDC_GPR1                        1001
@@ -742,7 +742,6 @@
 #define IDC_VEC307                      1507
 #define IDC_STATIC_CODEFRAME            1507
 #define IDC_VEC308                      1508
-#define IDC_STATIC_CodeName             1508
 #define IDC_STATIC_CODENAME             1508
 #define IDC_STATIC_CHEAT_COUNTRY        1509
 #define IDC_STATIC_CHEAT_NOTE1          1510
@@ -769,6 +768,16 @@
 #define IDC_FULLSCREEN                  1534
 #define IDC_GLIDE                       1535
 #define IDC_HEADCOUNTRY                 1536
+#define IDC_DISPLAY_STATUSBAR           1537
+#define IDC_HIGHFREQTIMER               1538
+#define ID_OVERCLOCKSTOCK               1539
+#define ID_OVERCLOCK6                   1540
+#define ID_OVERCLOCK9                   1541
+#define ID_OVERCLOCK12                  1542
+#define ID_OVERCLOCK15                  1543
+#define ID_OVERCLOCK18                  1544
+#define ID_PDSPEEDHACK                  1545
+#define ID_PDSPEEDHACKBOOST             1546
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

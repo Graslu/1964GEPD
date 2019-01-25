@@ -133,7 +133,7 @@ void RunEmulator(uint32 core)
  */
 BOOL PauseEmulator(void)
 {
-	//if(emustatus.Emu_Is_Paused) return TRUE;
+	if(emustatus.Emu_Is_Paused) return TRUE;
 
 	if(emustatus.exception_entry_count)			/* || ITLB_Error || (gHWS_COP0Reg[STATUS] & EXL) ) */
 	{
@@ -182,7 +182,6 @@ step2:
 	SetStatusBarText(0, generalmessage);
 	SetWindowText(gui.hwnd1964main, generalmessage);
 	Mute();
-	ShowCursor(TRUE);
 	return TRUE;
 }
 
@@ -215,7 +214,7 @@ void ResumeEmulator(int action_after_pause)
 	SetWindowText(gui.hwnd1964main, generalmessage);
 	CheckButton(ID_BUTTON_PLAY, TRUE);
 	CheckButton(ID_BUTTON_PAUSE, FALSE);
-	ShowCursor(FALSE);
+	QueryPerformanceCounter(&LastSecondTime);
 }
 
 /*
@@ -354,6 +353,7 @@ void InitEmu(void)
 	CPUNeedToDoOtherTask = FALSE;
 	CPUNeedToCheckInterrupt = FALSE;
 	emustatus.Emu_Is_Paused = FALSE;
+	emustatus.gepd_pause = 0;
 	write_to_rom_flag = FALSE;
 	emustatus.exception_entry_count = 0;
 	emustatus.action_after_resume = DO_NOTHING_AFTER_PAUSE;
@@ -493,6 +493,8 @@ void (__cdecl StartCPUThread) (void *pVoid)
 	p_gMemoryState = (MemoryState *) &gMemoryState;
 	InitEmu();
 	N64_Boot();
+	if(mouseinjectorpresent)
+		CONTROLLER_HookROM((DWORD *)gMemoryState.ROM_Image); // hot patch rom here
 
 	emustatus.reason_to_stop = EMURUNNING;
 	DO_PROFILIER_R4300I

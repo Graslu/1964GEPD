@@ -30,7 +30,7 @@
 #include "windebug.h"
 #include "../romlist.h"
 
-#define MAIN_1964_KEY		"Software\\1964emu_085\\GUI"
+#define CFG_FILENAME		"\\1964.cfg"
 #define KEY_WINDOW_X		"WindowXPos"
 #define KEY_WINDOW_Y		"WindowYPos"
 #define KEY_MAXIMIZED		"Maximized"
@@ -41,20 +41,26 @@
 #define KEY_INPUT_PLUGIN	"InputPlugin"
 #define KEY_VIDEO_PLUGIN	"VideoPlugin"
 
-char	*ReadRegistryStrVal(char *MainKey, char *Field);
-uint32	ReadRegistryDwordVal(char *MainKey, char *Field);
 BOOL	Test1964Registry(void);
 void	InitAll1964Options(void);
+static unsigned int INI_OptionReadUInt(const char *str);
+static float INI_OptionReadFloat(const char *str);
+static char *INI_OptionReadString(const char *str);
+static int INI_FindString(const char *str);
+static int INI_CheckString(const char *str);
+static unsigned int INI_GetUInt(void);
+static float INI_GetFloat(void);
+static void INI_GetString(char *str, const int size);
 
 /*
  =======================================================================================================================
     This function is called only when 1964 starts £
  =======================================================================================================================
  */
-void ReadConfiguration(void)
+int ReadConfiguration(void)
 {
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-	char	Directory[_MAX_PATH], str[260];
+	char	str[260];
 	char	tempstr[_MAX_PATH];
 	int		i;
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -63,23 +69,20 @@ void ReadConfiguration(void)
 	{
 		InitAll1964Options();
 		WriteConfiguration();
-		return;
+		return 1;
 	}
 
-	strcpy(Directory, directories.main_directory);
-
-	strcpy(default_plugin_directory, Directory);
-	strcat(default_plugin_directory, "Plugin\\");
-
-	strcpy(default_save_directory, Directory);
-	strcat(default_save_directory, "Save\\");
+	strcpy(default_plugin_directory, directories.main_directory);
+	strcat(default_plugin_directory, "plugin\\");
+	strcpy(default_save_directory, directories.main_directory);
+	strcat(default_save_directory, "save\\");
 	
-	strcpy(gRegSettings.ROMPath, ReadRegistryStrVal(MAIN_1964_KEY, "ROMPath"));
+	strcpy(gRegSettings.ROMPath, INI_OptionReadString("ROMPath"));
 
 	GetCmdLineParameter(CMDLINE_AUDIO_PLUGIN, tempstr);		//Get command line audio plugin setting
 	if( strlen(tempstr) == 0 )
 	{
-		strcpy(gRegSettings.AudioPlugin, ReadRegistryStrVal(MAIN_1964_KEY, "AudioPlugin"));
+		strcpy(gRegSettings.AudioPlugin, INI_OptionReadString("AudioPlugin"));
 	}
 	else
 	{
@@ -89,7 +92,7 @@ void ReadConfiguration(void)
 	GetCmdLineParameter(CMDLINE_VIDEO_PLUGIN, tempstr);		//Get command line video plugin setting
 	if( strlen(tempstr) == 0 )
 	{
-		strcpy(gRegSettings.VideoPlugin, ReadRegistryStrVal(MAIN_1964_KEY, "VideoPlugin"));
+		strcpy(gRegSettings.VideoPlugin, INI_OptionReadString("VideoPlugin"));
 	}
 	else
 	{
@@ -99,7 +102,7 @@ void ReadConfiguration(void)
 	GetCmdLineParameter(CMDLINE_CONTROLLER_PLUGIN, tempstr);		//Get command line controller plugin setting
 	if( strlen(tempstr) == 0 )
 	{
-		strcpy(gRegSettings.InputPlugin, ReadRegistryStrVal(MAIN_1964_KEY, "InputPlugin"));
+		strcpy(gRegSettings.InputPlugin, INI_OptionReadString("InputPlugin"));
 	}
 	else
 	{
@@ -107,47 +110,51 @@ void ReadConfiguration(void)
 	}
 	
 	
-	strcpy(user_set_rom_directory, ReadRegistryStrVal(MAIN_1964_KEY, "ROMDirectory"));
+	strcpy(user_set_rom_directory, INI_OptionReadString("ROMDirectory"));
 	if(strlen(user_set_rom_directory) == 0) 
 	{
 		strcpy(user_set_rom_directory, gRegSettings.ROMPath);
 	}
 	
-	strcpy(directories.last_rom_directory, ReadRegistryStrVal(MAIN_1964_KEY, "LastROMDirectory"));
-	strcpy(user_set_save_directory, ReadRegistryStrVal(MAIN_1964_KEY, "SaveDirectory"));
+	strcpy(directories.last_rom_directory, INI_OptionReadString("LastROMDirectory"));
+	strcpy(user_set_save_directory, INI_OptionReadString("SaveDirectory"));
 
-	strcpy(state_save_directory, ReadRegistryStrVal(MAIN_1964_KEY, "StateSaveDirectory"));
+	strcpy(state_save_directory, INI_OptionReadString("StateSaveDirectory"));
 	if(strlen(state_save_directory) == 0) strcpy(state_save_directory, default_state_save_directory);
 
-	strcpy(user_set_plugin_directory, ReadRegistryStrVal(MAIN_1964_KEY, "PluginDirectory"));
+	strcpy(user_set_plugin_directory, INI_OptionReadString("PluginDirectory"));
 	if(strlen(user_set_plugin_directory) == 0) strcpy(user_set_plugin_directory, default_plugin_directory);
 
 	emuoptions.auto_run_rom = 1; //0.8.5: This is no longer a user option
-	emuoptions.auto_full_screen = ReadRegistryDwordVal(MAIN_1964_KEY, "AutoFullScreen");
-	//emuoptions.auto_apply_cheat_code = ReadRegistryDwordVal(MAIN_1964_KEY, "AutoApplyCheat");
-	emuoptions.UsingRspPlugin = ReadRegistryDwordVal(MAIN_1964_KEY, "UsingRspPlugin");
+	emuoptions.auto_full_screen = INI_OptionReadUInt("AutoFullScreen");
+	emuoptions.auto_apply_cheat_code = INI_OptionReadUInt("AutoApplyCheat");
+	emuoptions.UsingRspPlugin = INI_OptionReadUInt("UsingRspPlugin");
 
-	guioptions.pause_at_inactive = ReadRegistryDwordVal(MAIN_1964_KEY, "PauseWhenInactive");
-	guioptions.pause_at_menu = ReadRegistryDwordVal(MAIN_1964_KEY, "PauseAtMenu");
-	guioptions.show_expert_user_menu = ReadRegistryDwordVal(MAIN_1964_KEY, "ExpertUserMode");
-	guioptions.show_recent_rom_directory_list = ReadRegistryDwordVal(MAIN_1964_KEY, "RomDirectoryListMenu");
-	guioptions.show_recent_game_list = ReadRegistryDwordVal(MAIN_1964_KEY, "GameListMenu");
-	guioptions.display_detail_status = ReadRegistryDwordVal(MAIN_1964_KEY, "DisplayDetailStatus");
-	guioptions.display_profiler_status = ReadRegistryDwordVal(MAIN_1964_KEY, "DisplayProfilerStatus");
-	guioptions.show_state_selector_menu = ReadRegistryDwordVal(MAIN_1964_KEY, "StateSelectorMenu");
-	guioptions.show_critical_msg_window = ReadRegistryDwordVal(MAIN_1964_KEY, "DisplayCriticalMessageWindow");
-	guioptions.display_romlist = ReadRegistryDwordVal(MAIN_1964_KEY, "DisplayRomList");
-	romlist_sort_method = ReadRegistryDwordVal(MAIN_1964_KEY, "SortRomList");
-	romlistNameToDisplay = ReadRegistryDwordVal(MAIN_1964_KEY, "RomNameToDisplay");
+	guioptions.pause_at_inactive = INI_OptionReadUInt("PauseWhenInactive");
+	guioptions.pause_at_menu = INI_OptionReadUInt("PauseAtMenu");
+	guioptions.show_expert_user_menu = INI_OptionReadUInt("ExpertUserMode");
+	guioptions.show_recent_rom_directory_list = INI_OptionReadUInt("RomDirectoryListMenu");
+	guioptions.show_recent_game_list = INI_OptionReadUInt("GameListMenu");
+	guioptions.display_detail_status = INI_OptionReadUInt("DisplayDetailStatus");
+	guioptions.display_profiler_status = INI_OptionReadUInt("DisplayProfilerStatus");
+	guioptions.show_state_selector_menu = INI_OptionReadUInt("StateSelectorMenu");
+	guioptions.show_critical_msg_window = INI_OptionReadUInt("DisplayCriticalMessageWindow");
+	guioptions.display_romlist = INI_OptionReadUInt("DisplayRomList");
+	guioptions.display_statusbar = INI_OptionReadUInt("DisplayStatusBar");
+	guioptions.highfreqtimer = INI_OptionReadUInt("HighFreqTimer");
+	romlist_sort_method = INI_OptionReadUInt("SortRomList");
+	romlistNameToDisplay = INI_OptionReadUInt("RomNameToDisplay");
 
-	emuoptions.dma_in_segments = ReadRegistryDwordVal(MAIN_1964_KEY, "DmaInSegments");
-	emuoptions.SyncVI = ReadRegistryDwordVal(MAIN_1964_KEY, "emuoptions.SyncVI");
+	emuoptions.dma_in_segments = INI_OptionReadUInt("DmaInSegments");
+	emuoptions.OverclockFactor = INI_OptionReadUInt("OverclockFactor") > 0 && INI_OptionReadUInt("OverclockFactor") <= 18 ? INI_OptionReadUInt("OverclockFactor") : 9;
+	emuoptions.PDSpeedHack = INI_OptionReadUInt("PDSpeedHack");
+	emuoptions.PDSpeedHackBoost = INI_OptionReadUInt("PDSpeedHackBoost");
 	emuoptions.SyncVI = TRUE;
 
-	guioptions.use_default_save_directory = ReadRegistryDwordVal(MAIN_1964_KEY, "UseDefaultSaveDiectory");
-	guioptions.use_default_state_save_directory = ReadRegistryDwordVal(MAIN_1964_KEY, "UseDefaultStateSaveDiectory");
-	guioptions.use_default_plugin_directory = ReadRegistryDwordVal(MAIN_1964_KEY, "UseDefaultPluginDiectory");
-	guioptions.use_last_rom_directory = ReadRegistryDwordVal(MAIN_1964_KEY, "UseLastRomDiectory");
+	guioptions.use_default_save_directory = INI_OptionReadUInt("UseDefaultSaveDiectory");
+	guioptions.use_default_state_save_directory = INI_OptionReadUInt("UseDefaultStateSaveDiectory");
+	guioptions.use_default_plugin_directory = INI_OptionReadUInt("UseDefaultPluginDiectory");
+	guioptions.use_last_rom_directory = INI_OptionReadUInt("UseLastRomDiectory");
 
 	/* Set the save directory to use */
 	if(guioptions.use_default_save_directory)
@@ -180,29 +187,29 @@ void ReadConfiguration(void)
 		strcpy(directories.plugin_directory_to_use, user_set_plugin_directory);
 
 #ifdef DEBUG_COMMON
-	defaultoptions.Eeprom_size = ReadRegistryDwordVal(MAIN_1964_KEY, "DefaultEepromSize");
+	defaultoptions.Eeprom_size = INI_OptionReadUInt("DefaultEepromSize");
 	if(defaultoptions.Eeprom_size == 0 || defaultoptions.Eeprom_size > 2) defaultoptions.Eeprom_size = 1;
 
-	defaultoptions.RDRAM_Size = ReadRegistryDwordVal(MAIN_1964_KEY, "DefaultRdramSize");
+	defaultoptions.RDRAM_Size = INI_OptionReadUInt("DefaultRdramSize");
 	if(defaultoptions.RDRAM_Size == 0 || defaultoptions.RDRAM_Size > 2) defaultoptions.RDRAM_Size = 2;
 
 	defaultoptions.Emulator = DYNACOMPILER;
 
-	defaultoptions.Save_Type = ReadRegistryDwordVal(MAIN_1964_KEY, "DefaultSaveType");
+	defaultoptions.Save_Type = INI_OptionReadUInt("DefaultSaveType");
 	if(defaultoptions.Save_Type == DEFAULT_SAVETYPE) defaultoptions.Save_Type = ANYUSED_SAVETYPE;
 
-	defaultoptions.Code_Check = ReadRegistryDwordVal(MAIN_1964_KEY, "DefaultCodeCheck");
-	defaultoptions.Max_FPS = ReadRegistryDwordVal(MAIN_1964_KEY, "DefaultMaxFPS");
-	defaultoptions.Use_TLB = ReadRegistryDwordVal(MAIN_1964_KEY, "DefaultUseTLB");
-	defaultoptions.FPU_Hack = ReadRegistryDwordVal(MAIN_1964_KEY, "DefaultUseFPUHack");
+	defaultoptions.Code_Check = INI_OptionReadUInt("DefaultCodeCheck");
+	defaultoptions.Max_FPS = INI_OptionReadUInt("DefaultMaxFPS");
+	defaultoptions.Use_TLB = INI_OptionReadUInt("DefaultUseTLB");
+	defaultoptions.FPU_Hack = INI_OptionReadUInt("DefaultUseFPUHack");
 
 	/*
-	 * defaultoptions.Link_4KB_Blocks =ReadRegistryDwordVal(MAIN_1964_KEY,
+	 * defaultoptions.Link_4KB_Blocks =INI_OptionReadUInt(
 	 * "DefaultUseLinkBlocks");
 	 */
 	defaultoptions.Link_4KB_Blocks = USE4KBLINKBLOCK_YES;
 	defaultoptions.DMA_Segmentation = emuoptions.dma_in_segments;
-	defaultoptions.Use_Register_Caching = ReadRegistryDwordVal(MAIN_1964_KEY, "RegisterCaching");
+	defaultoptions.Use_Register_Caching = INI_OptionReadUInt("RegisterCaching");
 	if(defaultoptions.Use_Register_Caching == USEREGC_DEFAULT || defaultoptions.Use_Register_Caching > USEREGC_NO)
 		defaultoptions.Use_Register_Caching = USEREGC_YES;
 
@@ -214,7 +221,7 @@ void ReadConfiguration(void)
 	 * I think it is better to call the function if we need this here.
 	 */
 	defaultoptions.Eeprom_size = EEPROMSIZE_4KB;
-	defaultoptions.RDRAM_Size = RDRAMSIZE_4MB;
+	defaultoptions.RDRAM_Size = RDRAMSIZE_8MB;
 	defaultoptions.Emulator = DYNACOMPILER;
 	defaultoptions.Save_Type = ANYUSED_SAVETYPE;
 	defaultoptions.Code_Check = CODE_CHECK_MEMORY_QWORD;
@@ -229,40 +236,40 @@ void ReadConfiguration(void)
 	defaultoptions.Assume_32bit = ASSUME_32BIT_NO;
 	defaultoptions.Use_HLE = USEHLE_NO;
 #endif
-	guistatus.clientwidth = ReadRegistryDwordVal(MAIN_1964_KEY, "ClientWindowWidth");
+	guistatus.clientwidth = INI_OptionReadUInt("ClientWindowWidth");
 	if(guistatus.clientwidth < 320) guistatus.clientwidth = 640;
-	guistatus.clientheight = ReadRegistryDwordVal(MAIN_1964_KEY, "ClientWindowHeight");
+	guistatus.clientheight = INI_OptionReadUInt("ClientWindowHeight");
 	if(guistatus.clientheight < 200) guistatus.clientheight = 480;
-	guistatus.window_position.top = ReadRegistryDwordVal(MAIN_1964_KEY, "1964WindowTOP");
+	guistatus.window_position.top = INI_OptionReadUInt("1964WindowTOP");
 	if(guistatus.window_position.top < 0) guistatus.window_position.top = 100;
-	guistatus.window_position.left = ReadRegistryDwordVal(MAIN_1964_KEY, "1964WindowLeft");
+	guistatus.window_position.left = INI_OptionReadUInt("1964WindowLeft");
 	if(guistatus.window_position.left < 0) guistatus.window_position.left = 100;
-	guistatus.WindowIsMaximized = ReadRegistryDwordVal(MAIN_1964_KEY, "1964WindowIsMaximized");
+	guistatus.WindowIsMaximized = INI_OptionReadUInt("1964WindowIsMaximized");
 
 #ifdef DEBUG_COMMON
-	debugoptions.debug_trap = ReadRegistryDwordVal(MAIN_1964_KEY, "DebugTrap");
-	debugoptions.debug_si_controller = ReadRegistryDwordVal(MAIN_1964_KEY, "DebugSIController");
-	debugoptions.debug_sp_task = ReadRegistryDwordVal(MAIN_1964_KEY, "DebugSPTask");
-	debugoptions.debug_si_task = ReadRegistryDwordVal(MAIN_1964_KEY, "DebugSITask");
-	debugoptions.debug_sp_dma = ReadRegistryDwordVal(MAIN_1964_KEY, "DebugSPDMA");
-	debugoptions.debug_si_dma = ReadRegistryDwordVal(MAIN_1964_KEY, "DebugSIDMA");
-	debugoptions.debug_pi_dma = ReadRegistryDwordVal(MAIN_1964_KEY, "DebugPIDMA");
-	debugoptions.debug_si_mempak = ReadRegistryDwordVal(MAIN_1964_KEY, "DebugMempak");
-	debugoptions.debug_tlb = ReadRegistryDwordVal(MAIN_1964_KEY, "DebugTLB");
-	debugoptions.debug_si_eeprom = ReadRegistryDwordVal(MAIN_1964_KEY, "DebugEEPROM");
-	debugoptions.debug_sram = ReadRegistryDwordVal(MAIN_1964_KEY, "DebugSRAM");
+	debugoptions.debug_trap = INI_OptionReadUInt("DebugTrap");
+	debugoptions.debug_si_controller = INI_OptionReadUInt("DebugSIController");
+	debugoptions.debug_sp_task = INI_OptionReadUInt("DebugSPTask");
+	debugoptions.debug_si_task = INI_OptionReadUInt("DebugSITask");
+	debugoptions.debug_sp_dma = INI_OptionReadUInt("DebugSPDMA");
+	debugoptions.debug_si_dma = INI_OptionReadUInt("DebugSIDMA");
+	debugoptions.debug_pi_dma = INI_OptionReadUInt("DebugPIDMA");
+	debugoptions.debug_si_mempak = INI_OptionReadUInt("DebugMempak");
+	debugoptions.debug_tlb = INI_OptionReadUInt("DebugTLB");
+	debugoptions.debug_si_eeprom = INI_OptionReadUInt("DebugEEPROM");
+	debugoptions.debug_sram = INI_OptionReadUInt("DebugSRAM");
 #endif
 	for(i = 0; i < MAX_RECENT_ROM_DIR; i++)
 	{
 		sprintf(str, "RecentRomDirectory%d", i);
-		strcpy(recent_rom_directory_lists[i], ReadRegistryStrVal(MAIN_1964_KEY, str));
+		strcpy(recent_rom_directory_lists[i], INI_OptionReadString(str));
 		if(strlen(recent_rom_directory_lists[i]) == 0) strcpy(recent_rom_directory_lists[i], "Empty Rom Folder Slot");
 	}
 
 	for(i = 0; i < MAX_RECENT_GAME_LIST; i++)
 	{
 		sprintf(str, "RecentGame%d", i);
-		strcpy(recent_game_lists[i], ReadRegistryStrVal(MAIN_1964_KEY, str));
+		strcpy(recent_game_lists[i], INI_OptionReadString(str));
 		if(strlen(recent_game_lists[i]) == 0) strcpy(recent_game_lists[i], "Empty Game Slot");
 	}
 
@@ -270,20 +277,30 @@ void ReadConfiguration(void)
 	{
 		int width;
 		sprintf(str, "RomListColumn%dWidth", i);
-		width = ReadRegistryDwordVal(MAIN_1964_KEY, str);
-		if(width >= 0 && width <= 500)
+		width = INI_OptionReadUInt(str);
+		if(width >= 0 && width <= 520)
 		{
 			romListColumns[i].colWidth = width;
 		}
 
 		sprintf(str, "RomListColumn%dEnabled", i);
-		romListColumns[i].enabled = ReadRegistryDwordVal(MAIN_1964_KEY, str);
+		romListColumns[i].enabled = INI_OptionReadUInt(str);
 		if( romListColumns[i].enabled != TRUE )
 		{
 			romListColumns[i].enabled = FALSE;
 		}
 	}
+
+	return 0;
 }
+
+struct
+{
+	int textloc;
+	int textsize;
+	char text[0x10000000];
+	char numtemp[0x1000];
+} INI;
 
 /*
  =======================================================================================================================
@@ -291,119 +308,28 @@ void ReadConfiguration(void)
  */
 BOOL Test1964Registry(void)
 {
-	/*~~~~~~~~~~~~~~~~~*/
-	HKEY	hKey1, hKey2;
-	DWORD	rc;
-	/*~~~~~~~~~~~~~~~~~*/
-
-	if(RegConnectRegistry(NULL, HKEY_CURRENT_USER, &hKey1) == ERROR_SUCCESS)
+	FILE *fileptr;
+	int temp, status = TRUE;
+	char inifilepath[_MAX_PATH];
+	strcpy(inifilepath, directories.main_directory);
+	strcat(inifilepath, CFG_FILENAME);
+	INI.textsize = 0;
+	if((fileptr = fopen(inifilepath, "rb")) != NULL)
 	{
-		/*~~~~~~~~~~~~~~~~~~*/
-		char	szBuffer[260];
-		/*~~~~~~~~~~~~~~~~~~*/
-
-		strcpy(szBuffer, MAIN_1964_KEY);
-
-		rc = RegOpenKey(hKey1, MAIN_1964_KEY, &hKey2);
-		RegCloseKey(hKey1);
-
-		if(rc == ERROR_SUCCESS)
-			return TRUE;
-		else
-			return FALSE;
-	}
-
-	DisplayError("Error to read Windows registry database");
-	return FALSE;
-}
-
-char	szData[MAX_PATH];
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
-char *ReadRegistryStrVal(char *MainKey, char *Field)
-{
-	/*~~~~~~~~~~~~~~~~~~~*/
-	HKEY	hKey1, hKey2;
-	DWORD	rc;
-	DWORD	cbData, dwType;
-	/*~~~~~~~~~~~~~~~~~~~*/
-
-	if(RegConnectRegistry(NULL, HKEY_CURRENT_USER, &hKey1) == ERROR_SUCCESS)
-	{
-		/*~~~~~~~~~~~~~~~~~~*/
-		char	szBuffer[260];
-		/*~~~~~~~~~~~~~~~~~~*/
-
-		strcpy(szBuffer, MainKey);
-
-		rc = RegOpenKey(hKey1, szBuffer, &hKey2);
-		if(rc == ERROR_SUCCESS)
+		temp = fgetc(fileptr);
+		while(temp != EOF)
 		{
-			cbData = sizeof(szData);
-			rc = RegQueryValueEx(hKey2, Field, NULL, &dwType, (LPBYTE) szData, &cbData);
-
-			RegCloseKey(hKey2);
+			INI.text[INI.textsize] = temp;
+			INI.textsize++;
+			temp = fgetc(fileptr);
 		}
-
-		RegCloseKey(hKey1);
-	}
-
-	if(rc == ERROR_SUCCESS && cbData != 0)
-	{
-		return(szData);
+		INI.text[INI.textsize] = 0;
+		fclose(fileptr);
 	}
 	else
-	{
-		return("");
-	}
-}
-
-uint32	DwordData;
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
-uint32 ReadRegistryDwordVal(char *MainKey, char *Field)
-{
-	/*~~~~~~~~~~~~~~~~~~~~~~~*/
-	HKEY	hKey1, hKey2;
-	DWORD	rc;
-	DWORD	cbData;
-	DWORD	dwType = REG_DWORD;
-	/*~~~~~~~~~~~~~~~~~~~~~~~*/
-
-	if(RegConnectRegistry(NULL, HKEY_CURRENT_USER, &hKey1) == ERROR_SUCCESS)
-	{
-		/*~~~~~~~~~~~~~~~~~~*/
-		char	szBuffer[260];
-		/*~~~~~~~~~~~~~~~~~~*/
-
-		strcpy(szBuffer, MainKey);
-
-		rc = RegOpenKey(hKey1, szBuffer, &hKey2);
-		if(rc == ERROR_SUCCESS)
-		{
-			cbData = sizeof(DwordData);
-			rc = RegQueryValueEx(hKey2, Field, NULL, &dwType, (LPBYTE) & DwordData, &cbData);
-
-			RegCloseKey(hKey2);
-		}
-
-		RegCloseKey(hKey1);
-	}
-
-	if(rc == ERROR_SUCCESS && cbData != 0)
-	{
-		return(DwordData);
-	}
-	else
-	{
-		return(0);
-	}
+		status = FALSE;
+	INI.textloc = 0;
+	return status;
 }
 
 /*
@@ -412,244 +338,169 @@ uint32 ReadRegistryDwordVal(char *MainKey, char *Field)
  */
 void WriteConfiguration(void)
 {
+#define INI_OptionWriteUInt(variable, value) fprintf(fileptr, "%s %d\r\n", variable, value)
+#define INI_OptionWriteFloat(variable, value) fprintf(fileptr, "%s %f\r\n", variable, value)
+#define INI_OptionWriteString(variable, value) fprintf(fileptr, "%s %s\r\n", variable, value)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-	HKEY	hKey1, hKey2;
-	DWORD	rc;
-	DWORD	cbData;
-	char	szBuffer[260], str[260];
+	char	str[260];
 	int		i;
+	FILE	*fileptr;
+	char	inifilepath[_MAX_PATH];
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+	strcpy(inifilepath, directories.main_directory);
+	strcat(inifilepath, CFG_FILENAME);
 
 	/* Save current configuration */
-	if(RegConnectRegistry(NULL, HKEY_CURRENT_USER, &hKey1) != ERROR_SUCCESS)
+	if((fileptr = fopen(inifilepath, "wb")) != NULL)
 	{
-		DisplayError("Error to write registry");
-		return;
-	}
+		INI_OptionWriteString(KEY_ROM_PATH, gRegSettings.ROMPath);
 
-	strcpy(szBuffer, MAIN_1964_KEY);
-	rc = RegOpenKey(hKey1, szBuffer, &hKey2);
-	if(rc != ERROR_SUCCESS)
-	{
-		rc = RegCreateKey(hKey1, szBuffer, &hKey2);
-		if(rc != ERROR_SUCCESS)
+		INI_OptionWriteString(KEY_VIDEO_PLUGIN, gRegSettings.VideoPlugin);
+
+		INI_OptionWriteString(KEY_INPUT_PLUGIN, gRegSettings.InputPlugin);
+
+		INI_OptionWriteString(KEY_AUDIO_PLUGIN, gRegSettings.AudioPlugin);
+
+		INI_OptionWriteString("ROMDirectory", user_set_rom_directory);
+
+		INI_OptionWriteString("LastROMDirectory", directories.last_rom_directory);
+
+		INI_OptionWriteString("SaveDirectory", user_set_save_directory);
+
+		INI_OptionWriteString("StateSaveDirectory", state_save_directory);
+
+		INI_OptionWriteString("PluginDirectory", user_set_plugin_directory);
+
+		INI_OptionWriteUInt("AutoFullScreen", emuoptions.auto_full_screen);
+
+		INI_OptionWriteUInt("AutoApplyCheat", emuoptions.auto_apply_cheat_code);
+
+		INI_OptionWriteUInt("UsingRspPlugin", emuoptions.UsingRspPlugin);
+
+		INI_OptionWriteUInt("HighFreqTimer", guioptions.highfreqtimer);
+
+		INI_OptionWriteUInt("OverclockFactor", emuoptions.OverclockFactor);
+
+		INI_OptionWriteUInt("PDSpeedHack", emuoptions.PDSpeedHack);
+
+		INI_OptionWriteUInt("PDSpeedHackBoost", emuoptions.PDSpeedHackBoost);
+
+		INI_OptionWriteUInt("PauseWhenInactive", guioptions.pause_at_inactive);
+
+		INI_OptionWriteUInt("PauseAtMenu", guioptions.pause_at_menu);
+
+		INI_OptionWriteUInt("ExpertUserMode", guioptions.show_expert_user_menu);
+
+		INI_OptionWriteUInt("RomDirectoryListMenu", guioptions.show_recent_rom_directory_list);
+
+		INI_OptionWriteUInt("GameListMenu", guioptions.show_recent_game_list);
+
+		INI_OptionWriteUInt("DisplayDetailStatus", guioptions.display_detail_status);
+
+		INI_OptionWriteUInt("DisplayProfilerStatus", guioptions.display_profiler_status);
+
+		INI_OptionWriteUInt("StateSelectorMenu", guioptions.show_state_selector_menu);
+
+		INI_OptionWriteUInt("DisplayCriticalMessageWindow", guioptions.show_critical_msg_window);
+
+		INI_OptionWriteUInt("DisplayRomList", guioptions.display_romlist);
+
+		INI_OptionWriteUInt("DisplayStatusBar", guioptions.display_statusbar);
+
+		INI_OptionWriteUInt("SortRomList", romlist_sort_method);
+
+		INI_OptionWriteUInt("RomNameToDisplay", romlistNameToDisplay);
+
+		INI_OptionWriteUInt("UseDefaultSaveDiectory", guioptions.use_default_save_directory);
+
+		INI_OptionWriteUInt("UseDefaultStateSaveDiectory", guioptions.use_default_state_save_directory);
+
+		INI_OptionWriteUInt("UseDefaultPluginDiectory", guioptions.use_default_plugin_directory);
+
+		INI_OptionWriteUInt("UseLastRomDiectory", guioptions.use_last_rom_directory);
+
+#ifdef DEBUG_COMMON
+		INI_OptionWriteUInt("DmaInSegments", emuoptions.dma_in_segments);
+
+		INI_OptionWriteUInt("DefaultEepromSize", defaultoptions.Eeprom_size);
+
+		INI_OptionWriteUInt("DefaultRdramSize", defaultoptions.RDRAM_Size);
+
+		INI_OptionWriteUInt("DefaultEmulator", defaultoptions.Emulator);
+
+		INI_OptionWriteUInt("DefaultSaveType", defaultoptions.Save_Type);
+
+		INI_OptionWriteUInt("DefaultCodeCheck", defaultoptions.Code_Check);
+
+		INI_OptionWriteUInt("DefaultMaxFPS", defaultoptions.Max_FPS);
+
+		INI_OptionWriteUInt("DefaultUseTLB", defaultoptions.Use_TLB);
+
+		INI_OptionWriteUInt("CounterFactor", defaultoptions.Counter_Factor);
+
+		INI_OptionWriteUInt("RegisterCaching", defaultoptions.Use_Register_Caching);
+
+		INI_OptionWriteUInt("DefaultUseFPUHack", defaultoptions.FPU_Hack);
+#endif
+		INI_OptionWriteUInt("ClientWindowWidth", guistatus.clientwidth);
+
+		INI_OptionWriteUInt("ClientWindowHeight", guistatus.clientheight);
+
+		INI_OptionWriteUInt("1964WindowTOP", guistatus.window_position.top);
+
+		INI_OptionWriteUInt("1964WindowLeft", guistatus.window_position.left);
+
+		INI_OptionWriteUInt("1964WindowIsMaximized", guistatus.WindowIsMaximized);
+
+#ifdef DEBUG_COMMON
+		INI_OptionWriteUInt("DebugTrap", debugoptions.debug_trap);
+
+		INI_OptionWriteUInt("DebugSIController", debugoptions.debug_si_controller);
+
+		INI_OptionWriteUInt("DebugSPTask", debugoptions.debug_sp_task);
+
+		INI_OptionWriteUInt("DebugSITask", debugoptions.debug_si_task);
+
+		INI_OptionWriteUInt("DebugSPDMA", debugoptions.debug_sp_dma);
+
+		INI_OptionWriteUInt("DebugSIDMA", debugoptions.debug_si_dma);
+
+		INI_OptionWriteUInt("DebugPIDMA", debugoptions.debug_pi_dma);
+
+		INI_OptionWriteUInt("DebugMempak", debugoptions.debug_si_mempak);
+
+		INI_OptionWriteUInt("DebugTLB", debugoptions.debug_tlb);
+
+		INI_OptionWriteUInt("DebugEEPROM", debugoptions.debug_si_eeprom);
+
+		INI_OptionWriteUInt("DebugSRAM", debugoptions.debug_sram);
+#endif
+		for(i = 0; i < MAX_RECENT_ROM_DIR; i++)
 		{
-			DisplayError("Error to create MAIN_1964_KEY in the registry");
-			return;
+			sprintf(str, "RecentRomDirectory%d", i);
+			INI_OptionWriteString(str, recent_rom_directory_lists[i]);
 		}
+
+		for(i = 0; i < MAX_RECENT_GAME_LIST; i++)
+		{
+			sprintf(str, "RecentGame%d", i);
+			INI_OptionWriteString(str, recent_game_lists[i]);
+		}
+
+		for(i = 0; i < numberOfRomListColumns; i++)
+		{
+			sprintf(str, "RomListColumn%dWidth", i);
+			INI_OptionWriteUInt(str, romListColumns[i].colWidth);
+
+			sprintf(str, "RomListColumn%dEnabled", i);
+			INI_OptionWriteUInt(str, romListColumns[i].enabled);
+		}
+		fclose(fileptr);
 	}
 
-	strcpy(szData, gRegSettings.ROMPath);
-	cbData = strlen(szData) + 1;
-	RegSetValueEx(hKey2, KEY_ROM_PATH, 0, REG_SZ, (LPBYTE) szData, cbData);
-
-	strcpy(szData, gRegSettings.VideoPlugin);
-	cbData = strlen(szData) + 1;
-	RegSetValueEx(hKey2, KEY_VIDEO_PLUGIN, 0, REG_SZ, (LPBYTE) szData, cbData);
-
-	strcpy(szData, gRegSettings.InputPlugin);
-	cbData = strlen(szData) + 1;
-	RegSetValueEx(hKey2, KEY_INPUT_PLUGIN, 0, REG_SZ, (LPBYTE) szData, cbData);
-
-	strcpy(szData, gRegSettings.AudioPlugin);
-	cbData = strlen(szData) + 1;
-	RegSetValueEx(hKey2, KEY_AUDIO_PLUGIN, 0, REG_SZ, (LPBYTE) szData, cbData);
-
-	strcpy(szData, user_set_rom_directory);
-	cbData = strlen(szData) + 1;
-	RegSetValueEx(hKey2, "ROMDirectory", 0, REG_SZ, (LPBYTE) szData, cbData);
-
-	strcpy(szData, directories.last_rom_directory);
-	cbData = strlen(szData) + 1;
-	RegSetValueEx(hKey2, "LastROMDirectory", 0, REG_SZ, (LPBYTE) szData, cbData);
-
-	strcpy(szData, user_set_save_directory);
-	cbData = strlen(szData) + 1;
-	RegSetValueEx(hKey2, "SaveDirectory", 0, REG_SZ, (LPBYTE) szData, cbData);
-
-	strcpy(szData, state_save_directory);
-	cbData = strlen(szData) + 1;
-	RegSetValueEx(hKey2, "StateSaveDirectory", 0, REG_SZ, (LPBYTE) szData, cbData);
-
-	strcpy(szData, user_set_plugin_directory);
-	cbData = strlen(szData) + 1;
-	RegSetValueEx(hKey2, "PluginDirectory", 0, REG_SZ, (LPBYTE) szData, cbData);
-
-	cbData = sizeof(DwordData);
-
-	DwordData = emuoptions.SyncVI;
-	RegSetValueEx(hKey2, "emuoptions.SyncVI", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = emuoptions.auto_full_screen;
-	RegSetValueEx(hKey2, "AutoFullScreen", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = emuoptions.auto_apply_cheat_code;
-	RegSetValueEx(hKey2, "AutoApplyCheat", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = emuoptions.UsingRspPlugin;
-	RegSetValueEx(hKey2, "UsingRspPlugin", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guioptions.pause_at_inactive;
-	RegSetValueEx(hKey2, "PauseWhenInactive", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guioptions.pause_at_menu;
-	RegSetValueEx(hKey2, "PauseAtMenu", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guioptions.show_expert_user_menu;
-	RegSetValueEx(hKey2, "ExpertUserMode", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guioptions.show_recent_rom_directory_list;
-	RegSetValueEx(hKey2, "RomDirectoryListMenu", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guioptions.show_recent_game_list;
-	RegSetValueEx(hKey2, "GameListMenu", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guioptions.display_detail_status;
-	RegSetValueEx(hKey2, "DisplayDetailStatus", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guioptions.display_profiler_status;
-	RegSetValueEx(hKey2, "DisplayProfilerStatus", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guioptions.show_state_selector_menu;
-	RegSetValueEx(hKey2, "StateSelectorMenu", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guioptions.show_critical_msg_window;
-	RegSetValueEx(hKey2, "DisplayCriticalMessageWindow", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guioptions.display_romlist;
-	RegSetValueEx(hKey2, "DisplayRomList", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = romlist_sort_method;
-	RegSetValueEx(hKey2, "SortRomList", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = romlistNameToDisplay;
-	RegSetValueEx(hKey2, "RomNameToDisplay", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guioptions.use_default_save_directory;
-	RegSetValueEx(hKey2, "UseDefaultSaveDiectory", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guioptions.use_default_state_save_directory;
-	RegSetValueEx(hKey2, "UseDefaultStateSaveDiectory", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guioptions.use_default_plugin_directory;
-	RegSetValueEx(hKey2, "UseDefaultPluginDiectory", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guioptions.use_last_rom_directory;
-	RegSetValueEx(hKey2, "UseLastRomDiectory", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-#ifdef DEBUG_COMMON
-	DwordData = emuoptions.dma_in_segments;
-	RegSetValueEx(hKey2, "DmaInSegments", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = defaultoptions.Eeprom_size;
-	RegSetValueEx(hKey2, "DefaultEepromSize", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = defaultoptions.RDRAM_Size;
-	RegSetValueEx(hKey2, "DefaultRdramSize", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = defaultoptions.Emulator;
-	RegSetValueEx(hKey2, "DefaultEmulator", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = defaultoptions.Save_Type;
-	RegSetValueEx(hKey2, "DefaultSaveType", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = defaultoptions.Code_Check;
-	RegSetValueEx(hKey2, "DefaultCodeCheck", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = defaultoptions.Max_FPS;
-	RegSetValueEx(hKey2, "DefaultMaxFPS", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = defaultoptions.Use_TLB;
-	RegSetValueEx(hKey2, "DefaultUseTLB", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = defaultoptions.Counter_Factor;
-	RegSetValueEx(hKey2, "CounterFactor", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = defaultoptions.Use_Register_Caching;
-	RegSetValueEx(hKey2, "RegisterCaching", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = defaultoptions.FPU_Hack;
-	RegSetValueEx(hKey2, "DefaultUseFPUHack", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-#endif
-	DwordData = guistatus.clientwidth;
-	RegSetValueEx(hKey2, "ClientWindowWidth", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guistatus.clientheight;
-	RegSetValueEx(hKey2, "ClientWindowHeight", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guistatus.window_position.top;
-	RegSetValueEx(hKey2, "1964WindowTOP", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guistatus.window_position.left;
-	RegSetValueEx(hKey2, "1964WindowLeft", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = guistatus.WindowIsMaximized;
-	RegSetValueEx(hKey2, "1964WindowIsMaximized", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-#ifdef DEBUG_COMMON
-	DwordData = debugoptions.debug_trap;
-	RegSetValueEx(hKey2, "DebugTrap", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = debugoptions.debug_si_controller;
-	RegSetValueEx(hKey2, "DebugSIController", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = debugoptions.debug_sp_task;
-	RegSetValueEx(hKey2, "DebugSPTask", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = debugoptions.debug_si_task;
-	RegSetValueEx(hKey2, "DebugSITask", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = debugoptions.debug_sp_dma;
-	RegSetValueEx(hKey2, "DebugSPDMA", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = debugoptions.debug_si_dma;
-	RegSetValueEx(hKey2, "DebugSIDMA", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = debugoptions.debug_pi_dma;
-	RegSetValueEx(hKey2, "DebugPIDMA", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = debugoptions.debug_si_mempak;
-	RegSetValueEx(hKey2, "DebugMempak", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = debugoptions.debug_tlb;
-	RegSetValueEx(hKey2, "DebugTLB", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = debugoptions.debug_si_eeprom;
-	RegSetValueEx(hKey2, "DebugEEPROM", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-	DwordData = debugoptions.debug_sram;
-	RegSetValueEx(hKey2, "DebugSRAM", 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-#endif
-	for(i = 0; i < MAX_RECENT_ROM_DIR; i++)
-	{
-		strcpy(szData, recent_rom_directory_lists[i]);
-		sprintf(str, "RecentRomDirectory%d", i);
-		cbData = strlen(szData) + 1;
-		RegSetValueEx(hKey2, str, 0, REG_SZ, (LPBYTE) szData, cbData);
-	}
-
-	for(i = 0; i < MAX_RECENT_GAME_LIST; i++)
-	{
-		strcpy(szData, recent_game_lists[i]);
-		sprintf(str, "RecentGame%d", i);
-		cbData = strlen(szData) + 1;
-		RegSetValueEx(hKey2, str, 0, REG_SZ, (LPBYTE) szData, cbData);
-	}
-
-	for(i = 0; i < numberOfRomListColumns; i++)
-	{
-		sprintf(str, "RomListColumn%dWidth", i);
-		cbData = sizeof(DwordData);
-		DwordData = romListColumns[i].colWidth;
-		RegSetValueEx(hKey2, str, 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-
-		sprintf(str, "RomListColumn%dEnabled", i);
-		cbData = sizeof(DwordData);
-		DwordData = romListColumns[i].enabled;
-		RegSetValueEx(hKey2, str, 0, REG_DWORD, (LPBYTE) & DwordData, cbData);
-	}
-
-	RegCloseKey(hKey2);
+#undef INI_OptionWriteInt
+#undef INI_OptionWriteFloat
+#undef INI_OptionWriteString
 }
 
 /*
@@ -663,16 +514,15 @@ void InitAll1964Options(void)
 	/*~~*/
 
 	strcpy(default_plugin_directory, directories.main_directory);
-	strcat(default_plugin_directory, "Plugin\\");
-
+	strcat(default_plugin_directory, "plugin\\");
 	strcpy(default_save_directory, directories.main_directory);
-	strcat(default_save_directory, "Save\\");
+	strcat(default_save_directory, "save\\");
 
 	strcpy(gRegSettings.ROMPath, "");
 	//JoelTODO: config Plugins here.
-	strcpy(gRegSettings.AudioPlugin, "AudioHLE.dll");
-	strcpy(gRegSettings.VideoPlugin, "DaedalusD3D8.dll");
-	strcpy(gRegSettings.InputPlugin, "Basic Keyboard Plugin.dll");
+	strcpy(gRegSettings.AudioPlugin, "AziAudio0.56WIP2.dll");
+	strcpy(gRegSettings.VideoPlugin, "Jabo_Direct3D8.dll");
+	strcpy(gRegSettings.InputPlugin, "Mouse_Injector.dll");
 	strcpy(user_set_rom_directory, "");
 	strcpy(directories.last_rom_directory, "");
 	strcpy(user_set_save_directory, default_save_directory);
@@ -688,6 +538,9 @@ void InitAll1964Options(void)
 	emuoptions.UsingRspPlugin = FALSE;
 	emuoptions.dma_in_segments = TRUE;
 	emuoptions.SyncVI = TRUE;
+	emuoptions.OverclockFactor = 9;
+	emuoptions.PDSpeedHack = TRUE;
+	emuoptions.PDSpeedHackBoost = FALSE;
 	
 	guioptions.pause_at_inactive = TRUE;
 	guioptions.pause_at_menu = FALSE;
@@ -695,11 +548,14 @@ void InitAll1964Options(void)
 	guioptions.show_expert_user_menu = FALSE;
 	guioptions.show_recent_rom_directory_list = TRUE;
 	guioptions.show_recent_game_list = TRUE;
-	guioptions.display_detail_status = TRUE;
-	guioptions.display_profiler_status = TRUE;
+	guioptions.display_detail_status = FALSE;
+	guioptions.display_profiler_status = FALSE;
 	guioptions.show_state_selector_menu = FALSE;
 	guioptions.show_critical_msg_window = FALSE;
 	guioptions.display_romlist = TRUE;
+	guioptions.display_statusbar = TRUE;
+	guioptions.highfreqtimer = TRUE;
+	romlistNameToDisplay = ROMLIST_DISPLAY_FILENAME;
 	romlist_sort_method = ROMLIST_GAMENAME;
 
 	guioptions.use_default_save_directory = TRUE;
@@ -708,7 +564,7 @@ void InitAll1964Options(void)
 	guioptions.use_last_rom_directory = TRUE;
 
 	defaultoptions.Eeprom_size = EEPROMSIZE_4KB;
-	defaultoptions.RDRAM_Size = RDRAMSIZE_4MB;
+	defaultoptions.RDRAM_Size = RDRAMSIZE_8MB;
 	defaultoptions.Emulator = DYNACOMPILER;
 	defaultoptions.Save_Type = ANYUSED_SAVETYPE;
 
@@ -724,11 +580,15 @@ void InitAll1964Options(void)
 	defaultoptions.Counter_Factor = COUTERFACTOR_2;
 	defaultoptions.Use_Register_Caching = USEREGC_YES;
 
-	guistatus.clientwidth = 640;
-	guistatus.clientheight = 580;
+	guistatus.clientwidth = 864;
+	guistatus.clientheight = 586;
 	guistatus.window_position.top = 100;
 	guistatus.window_position.left = 100;
 	guistatus.WindowIsMaximized = FALSE;
+	romListColumns[0].colWidth = 244;
+	romListColumns[1].colWidth = 57;
+	romListColumns[2].colWidth = 52;
+	romListColumns[3].colWidth = 488;
 
 #ifdef DEBUG_COMMON
 	debugoptions.debug_trap = 1;
@@ -752,4 +612,118 @@ void InitAll1964Options(void)
 	{
 		strcpy(recent_game_lists[i], "Empty Game Slot");
 	}
+}
+//==========================================================================
+// INI_OptionReadInt: read int from config file
+//==========================================================================
+static unsigned int INI_OptionReadUInt(const char *str)
+{
+	unsigned int temp = 0;
+	if(INI_FindString(str))
+		temp = INI_GetUInt();
+	INI.textloc = 0;
+	return temp;
+}
+//==========================================================================
+// INI_OptionReadFloat: read float from config file
+//==========================================================================
+static float INI_OptionReadFloat(const char *str)
+{
+	float temp = 0;
+	if(INI_FindString(str))
+		temp = INI_GetFloat();
+	INI.textloc = 0;
+	return temp;
+}
+//==========================================================================
+// INI_OptionReadString: read string from config file
+//==========================================================================
+static char *INI_OptionReadString(const char *str)
+{
+	int foundvar = 1;
+	char temp[0x10000] = "";
+	if(INI_FindString(str))
+		INI_GetString(temp, sizeof(temp));
+	else
+		foundvar = 0;
+	INI.textloc = 0;
+	return foundvar ? (temp) : ("");
+}
+//==========================================================================
+// INI_FindString: search for variable in config file
+//==========================================================================
+static int INI_FindString(const char *str)
+{
+	char variable[128];
+	sprintf(variable, "%s ", str);
+	while(INI.textloc < INI.textsize && !INI_CheckString(variable))
+		INI.textloc++;
+	INI.textloc += strlen(variable);
+	if(INI.textloc < INI.textsize)
+		return 1;
+	return 0;
+}
+//==========================================================================
+// INI_CheckString
+//==========================================================================
+static int INI_CheckString(const char *str)
+{
+	int count = 0;
+	while(INI.textloc + count < INI.textsize && str[count] != 0 && str[count] == INI.text[INI.textloc + count])
+		count++;
+	if(str[count] == 0)
+		return 1;
+	return 0;
+}
+//==========================================================================
+// INI_GetInt
+//==========================================================================
+static unsigned int INI_GetUInt(void)
+{
+	int count = 0;
+	unsigned int temp = 0;
+	while(INI.textloc < INI.textsize && (INI.text[INI.textloc] < 48 || INI.text[INI.textloc] > 57) && INI.text[INI.textloc] != '-')
+		INI.textloc++;
+	while(INI.textloc < INI.textsize && count < 255 && ((INI.text[INI.textloc] >= 48 && INI.text[INI.textloc] <= 57) || INI.text[INI.textloc] == '-'))
+	{
+		INI.numtemp[count] = INI.text[INI.textloc];
+		INI.textloc++;
+		count++;
+	}
+	INI.numtemp[count] = 0;
+	sscanf(INI.numtemp, "%u", &temp);
+	return temp;
+}
+//==========================================================================
+// INI_GetFloat
+//==========================================================================
+static float INI_GetFloat(void)
+{
+	int count = 0;
+	float temp = 0;
+	while(INI.textloc < INI.textsize && (INI.text[INI.textloc] < 48 || INI.text[INI.textloc] > 57) && INI.text[INI.textloc] != '-' && INI.text[INI.textloc] != '.')
+		INI.textloc++;
+	while(INI.textloc < INI.textsize && count < 255 && ((INI.text[INI.textloc] >= 48 && INI.text[INI.textloc] <= 57) || INI.text[INI.textloc] == '-' || INI.text[INI.textloc] == '.'))
+	{
+		INI.numtemp[count] = INI.text[INI.textloc];
+		INI.textloc++;
+		count++;
+	}
+	INI.numtemp[count] = 0;
+	sscanf(INI.numtemp, "%f", &temp);
+	return temp;
+}
+//==========================================================================
+// INI_GetString
+//==========================================================================
+static void INI_GetString(char *str, const int size)
+{
+	int count = 0;
+	while(INI.textloc < INI.textsize && count < size - 1 && INI.text[INI.textloc] != 13 && INI.text[INI.textloc] != 10)
+	{
+		str[count] = INI.text[INI.textloc];
+		INI.textloc++;
+		count++;
+	}
+	str[count] = 0;
 }

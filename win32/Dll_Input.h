@@ -41,6 +41,8 @@ extern void CONTROLLER_RomClosed(void);
 extern void CONTROLLER_RomOpen(void);
 extern void CONTROLLER_WM_KeyDown(WPARAM _wParam, LPARAM _lParam);
 extern void CONTROLLER_WM_KeyUp(WPARAM _wParam, LPARAM _lParam);
+extern void CONTROLLER_HookRDRAM(DWORD *Mem, int OCFactor);
+extern void CONTROLLER_HookROM(DWORD *Rom);
 extern void (__cdecl *_CONTROLLER_DllAbout) (HWND _hWnd);
 extern void (__cdecl *_CONTROLLER_DllConfig) (HWND _hWnd);
 extern void (__cdecl *_CONTROLLER_DllTest) (HWND _hWnd);
@@ -54,4 +56,5 @@ extern BOOL			LoadControllerPlugin(char *libname);
 extern void			CloseControllerPlugin(void);
 
 extern HINSTANCE	hinstControllerPlugin;
+extern int			mouseinjectorpresent;
 #endif

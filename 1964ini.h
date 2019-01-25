@@ -158,6 +158,7 @@ void				CopyIniEntry(INI_ENTRY *, const INI_ENTRY *);
 void				DeleteIniEntryByEntry(INI_ENTRY *pentry);
 void				SetDefaultOptions(void);
 void				GenerateCurrentRomOptions(void);
+void				WriteProject64RDB(const uint32 crc1, const uint32 crc2, const uint8 countrycode);
 int					Write1964DefaultOptionsEntry(FILE *pstream);
 int					Read1964DefaultOptionsEntry(FILE *pstream);
 void				chopm(char *str);

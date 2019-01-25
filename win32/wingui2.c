@@ -498,7 +498,7 @@ void LoadPlugins(int type)
 		/* Set Video plugin path */
 		if(strcmp(gRegSettings.VideoPlugin, "") == 0)
 		{
-			strcpy(gRegSettings.VideoPlugin, "1964ogl.dll");
+			strcpy(gRegSettings.VideoPlugin, "Jabo_Direct3D8.dll");
 			strcat(VideoPath, gRegSettings.VideoPlugin);
 		}
 		else
@@ -535,7 +535,7 @@ void LoadPlugins(int type)
 		strcpy(InputPath, StartPath);
 		if(strcmp(gRegSettings.InputPlugin, "") == 0)
 		{
-			strcpy(gRegSettings.InputPlugin, "Basic Keyboard Plugin.dll");
+			strcpy(gRegSettings.InputPlugin, "Mouse_Injector.dll");
 			strcat(InputPath, gRegSettings.InputPlugin);
 		}
 		else
@@ -558,6 +558,8 @@ void LoadPlugins(int type)
 		 */
 		SetStatusBarText(0, "Init Input Plugin ...");
 		CONTROLLER_InitiateControllers(gui.hwnd1964main, Controls);
+		if(mouseinjectorpresent)
+			CONTROLLER_HookRDRAM((DWORD *)TLB_sDWord_ptr, emuoptions.OverclockFactor);
 	}
 
 	if(type == LOAD_ALL_PLUGIN || type == LOAD_AUDIO_PLUGIN)
@@ -568,7 +570,7 @@ void LoadPlugins(int type)
 		strcpy(AudioPath, StartPath);
 		if(strcmp(gRegSettings.AudioPlugin, "") == 0)
 		{
-			strcpy(gRegSettings.AudioPlugin, "AudioHLE.dll");
+			strcpy(gRegSettings.AudioPlugin, "AziAudio0.56WIP2.dll");
 			strcat(AudioPath, gRegSettings.AudioPlugin);
 		}
 		else
@@ -621,7 +623,7 @@ void LoadPlugins(int type)
 			CloseAudioPlugin();
 			strcpy(gRegSettings.AudioPlugin, "");
 			strcpy(AudioPath, StartPath);
-			strcpy(gRegSettings.AudioPlugin, "No Audio 1964.dll");
+			strcpy(gRegSettings.AudioPlugin, "No Sound.dll");
 			strcat(AudioPath, gRegSettings.AudioPlugin);
 			WriteConfiguration();
 			LoadAudioPlugin(AudioPath);

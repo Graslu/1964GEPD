@@ -41,13 +41,12 @@
 BOOL	CPUNeedToDoOtherTask = FALSE;
 BOOL	CPUNeedToCheckInterrupt = FALSE;
 int		CounterFactor = COUTERFACTOR_2;
-float	DOUBLE_COUNT=6.0f;
 
 /* Optimized new CPU COUNT and VI counter variables */
 uint64	current_counter;
 uint64	next_vi_counter;		/* use 64bit varible, will never overflow */
 uint64	next_count_counter;		/* value in here is in the unit of VIcounter, not in the half rate */
-uint32  vi_field_number = 0;;
+uint32  vi_field_number = 0;
 /*
  * speed concerning about using 64bit is not a big deal here £
  * because these two variables will not be used in emu main loop £
@@ -706,6 +705,8 @@ void Check_VI_and_COMPARE_Interrupt(void)
 	Set_Countdown_Counter();
 }
 
+#define DOUBLE_COUNT (uint32)emuoptions.OverclockFactor
+
 /*
  =======================================================================================================================
  =======================================================================================================================
@@ -785,6 +786,13 @@ void Set_PI_DMA_Timeout_Target_Counter(uint32 pi_dma_length)
 void Init_Count_Down_Counters(void)
 {
 	srand((unsigned) time(NULL));
+
+	// these needed to be initialized. I guess this won't affect emulation
+	// when this function is called in the middle of emulation?
+	current_counter = 0;
+	next_vi_counter = 0;
+	next_count_counter = 0;
+
 	Init_Timer_Event_List();
 	current_counter = gHWS_COP0Reg[COUNT] *
 		VICounterFactors[CounterFactor] /
@@ -860,8 +868,8 @@ void Init_VI_Counter(int tv_type)
 		max_vi_count = NTSC_VI_MAGIC_NUMBER;	/* 883120;//813722;//813196;//NTSC_VI_MAGIC_NUMBER; */
 		max_vi_lines = NTSC_MAX_VI_LINE;
 	}
-	max_vi_count*=DOUBLE_COUNT;
-
+	max_vi_count *= DOUBLE_COUNT;
+	
 	vi_count_per_line = max_vi_count / max_vi_lines;
 }
 
@@ -872,7 +880,8 @@ void Init_VI_Counter(int tv_type)
 void Set_VI_Counter_By_VSYNC(void)
 {
 	max_vi_count = (VI_V_SYNC_REG + 1) * 1500;
-	max_vi_count*=DOUBLE_COUNT;
+	max_vi_count *= DOUBLE_COUNT;
+
 	if((VI_V_SYNC_REG % 1) != 0)
 	{
 		max_vi_count -= 38;

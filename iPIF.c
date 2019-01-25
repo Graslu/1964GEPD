@@ -222,14 +222,13 @@ void WriteControllerPak(int device, char *cmd)
 				gamesave.firstusedsavemedia = MEMPAK_SAVETYPE;
 			}
 		}
-
 		/* Copy Data to Mempak */
 		memcpy(&(gamesave.mempak[device][offset * 32]), &cmd[3], 32);
 		gamesave.mempak_written[device] = TRUE;
 		FileIO_WriteMemPak(device);		//Save the file to disk
 	}
 
-	BuildCRC(&cmd[3], &crc);	/* Build CRC of the Data */
+	BuildCRC((unsigned char*)&cmd[3], &crc);	/* Build CRC of the Data */
 	cmd[35] = crc;
 }
 
@@ -1203,7 +1202,7 @@ void iPifCheck(void)
 			break;
 
 		default:
-			DisplayError("Unknown Command for unknwon Device %x", device);
+			DisplayError("Unknown Command for unknown Device %x", device);
 			exit(IPIF_EXIT);
 		}
 

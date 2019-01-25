@@ -740,58 +740,6 @@ int LoadGNUDistConditions(char *ConditionsBuf)
 
 /*
  =======================================================================================================================
-    Analyze String //
- =======================================================================================================================
- */
-void AnalyzeString(char *temp)
-{
-	/*~~~~~~~*/
-	int i = -1;
-	/*~~~~~~~*/
-
-	while(1)
-	{
-		i++;
-		if(temp[i] == 0) break;
-
-		/* A-Z */
-		if((temp[i] >= 0x41) && (temp[i] <= 0x5a)) continue;
-
-		/* a-z */
-		if((temp[i] >= 0x61) && (temp[i] <= 0x7a)) continue;
-
-		/* 0-9 */
-		if((temp[i] >= 0x30) && (temp[i] <= 0x39)) continue;
-
-		/* "." */
-		if(temp[i] == 0x2E) continue;
-
-		/* "_" */
-		if(temp[i] == 0x5F) continue;
-
-		/* " " */
-		if(temp[i] == 0x20) continue;
-
-		/* "(" */
-		if(temp[i] == 0x28) continue;
-
-		/* ")" */
-		if(temp[i] == 0x29) continue;
-
-		/* "-" */
-		if(temp[i] == 0x2D) continue;
-
-		/* "'" */
-		if(temp[i] == 0x27) continue;
-		if(temp[i] == '\\' || temp[i] == ':' || temp[i] == '/') continue;
-
-		/* unknown character ... print a "_" */
-		temp[i] = 0x5F;
-	}
-}
-
-/*
- =======================================================================================================================
  =======================================================================================================================
  */
 BOOL FileIO_CreateMempakFile(char *filename)
@@ -805,7 +753,7 @@ BOOL FileIO_CreateMempakFile(char *filename)
 	dest = fopen(filename, "wb");
 	if(dest)
 	{
-		fwrite(&gzipped_defaultm0[0], 113, 1, dest);
+		fwrite(&gzipped_defaultm0, sizeof(char), sizeof(gzipped_defaultm0), dest);
 		fclose(dest);
 	}
 	else
@@ -966,7 +914,6 @@ void GetFileName(char *Directory, char *Ext)
 		country,
 		Ext
 	);
-	AnalyzeString(Directory);
 }
 
 /*
@@ -997,7 +944,8 @@ void FileIO_WriteMemPak(int pak_no)
 			TRACE1("Write MEMPAK to file: %s", temp);
 		}
 #endif
-		fwrite(gamesave.mempak[0], 1024 * 32, 1, stream);
+		fseek(stream, (1024 * 32 * pak_no), SEEK_SET);
+		fwrite(gamesave.mempak[pak_no], 1024 * 32, 1, stream);
 		fclose(stream);
 	}
 }
@@ -1023,6 +971,7 @@ void FileIO_LoadMemPak(int pak_no)
 		if(!FileIO_CreateMempakFile(temp))
 		{
 			DisplayError("Cannot create an empty MEMPAK file: ", temp);
+			return;
 		}
 		else
 		{
@@ -1030,20 +979,20 @@ void FileIO_LoadMemPak(int pak_no)
 			if(stream == NULL)
 			{
 				DisplayError("Cannot Load MEMPAK from file %s", temp);
+				return;
 			}
 		}
 	}
-	else
-	{
+
 #ifdef DEBUG_COMMON
-		if( debugoptions.debug_si_mempak )
-		{
-			TRACE1("Load MEMPAK from file: %s", temp);
-		}
-#endif
-		fread(gamesave.mempak[0], 1024 * 32, 1, stream);
-		fclose(stream);
+	if( debugoptions.debug_si_mempak )
+	{
+		TRACE1("Load MEMPAK from file: %s", temp);
 	}
+#endif
+	fseek(stream, (1024 * 32 * pak_no), SEEK_SET);
+	fread(gamesave.mempak[pak_no], 1024 * 32, 1, stream);
+	fclose(stream);
 }
 
 /*

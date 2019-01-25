@@ -53,7 +53,11 @@ void				EnableStateMenu(void);
 void				DisableStateMenu(void);
 void				PrepareBeforePlay(int IsFullScreen);
 void				KillCPUThread(void);
+void				SetOverclockFactor(int factor);
 void				SetCounterFactor(int);
+void				PDTimingHack(void);
+void				PDSpeedHack(void);
+void				GEPDPause(BOOL pause);
 void				SetCodeCheckMethod(int);
 void				InitPluginData(void);
 void				Set_1964_Directory(void);
@@ -64,6 +68,7 @@ void				DisableDebugMenu(void);
 void				SetupDebuger(void);
 void				SaveCmdLineParameter(char *cmdline);
 BOOL				StartGameByCommandLine();
+void				SetHighResolutionTimer(void);
 
 void				StateSetNumber(int number);
 void				Exit1964(void);
@@ -128,6 +133,8 @@ struct GUIOPTIONS
 	BOOL	show_state_selector_menu;
 	BOOL	show_critical_msg_window;
 	BOOL	display_romlist;
+	BOOL	display_statusbar;
+	BOOL	highfreqtimer;
 };
 
 extern struct GUIOPTIONS	guioptions;

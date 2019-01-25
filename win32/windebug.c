@@ -214,7 +214,7 @@ LRESULT CALLBACK DEBUGGER(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 extern char op_str[0xff];
-extern void (__cdecl *_AUDIO_AiUpdate) (BOOL)
+extern void (__cdecl *_AUDIO_AiUpdate) (BOOL);
 
 /*
  =======================================================================================================================

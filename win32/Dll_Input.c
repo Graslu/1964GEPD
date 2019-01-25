@@ -31,6 +31,7 @@ CONTROL		Controls[4];
 
 /* Input plugin */
 HINSTANCE	hinstControllerPlugin = NULL;
+int			mouseinjectorpresent = 0;
 
 void (__cdecl *_CONTROLLER_CloseDLL) (void) = NULL;
 void (__cdecl *_CONTROLLER_ControllerCommand) (int Control, BYTE *Command) = NULL;
@@ -45,6 +46,8 @@ void (__cdecl *_CONTROLLER_RomClosed) (void) = NULL;
 void (__cdecl *_CONTROLLER_RomOpen) (void) = NULL;
 void (__cdecl *_CONTROLLER_WM_KeyDown) (WPARAM wParam, LPARAM lParam) = NULL;
 void (__cdecl *_CONTROLLER_WM_KeyUp) (WPARAM wParam, LPARAM lParam) = NULL;
+void (__cdecl *_CONTROLLER_HookRDRAM) (DWORD *Mem, int OCFactor) = NULL;
+void (__cdecl *_CONTROLLER_HookROM) (DWORD *Rom) = NULL;
 void (__cdecl *_CONTROLLER_Under_Selecting_DllAbout) (HWND) = NULL;
 void (__cdecl *_CONTROLLER_Under_Selecting_DllTest) (HWND) = NULL;
 
@@ -54,6 +57,7 @@ void (__cdecl *_CONTROLLER_Under_Selecting_DllTest) (HWND) = NULL;
  */
 BOOL LoadControllerPlugin(char *libname)
 {
+	mouseinjectorpresent = 0;
 	if(hinstControllerPlugin != NULL)
 	{
 		CloseControllerPlugin();
@@ -79,7 +83,7 @@ BOOL LoadControllerPlugin(char *libname)
 
 			if(Plugin_Info.Type == PLUGIN_TYPE_CONTROLLER)
 			{
-				if(Plugin_Info.Version == CONTROLLER_VERSION)
+				if(Plugin_Info.Version == CONTROLLER_VERSION || Plugin_Info.Version == 0xFBAD)
 				{
 					_CONTROLLER_CloseDLL = (void(__cdecl *) (void)) GetProcAddress(hinstControllerPlugin, "CloseDLL");
 					_CONTROLLER_ControllerCommand = (void(__cdecl *) (int Control, BYTE *Command)) GetProcAddress
@@ -123,6 +127,20 @@ BOOL LoadControllerPlugin(char *libname)
 							hinstControllerPlugin,
 							"WM_KeyUp"
 						);
+					if(Plugin_Info.Version == 0xFBAD)
+					{
+						_CONTROLLER_HookRDRAM = (void(__cdecl *) (DWORD *Mem, int OCFactor)) GetProcAddress
+							(
+								hinstControllerPlugin,
+								"HookRDRAM"
+							);
+						_CONTROLLER_HookROM = (void(__cdecl *) (DWORD *Rom)) GetProcAddress
+							(
+								hinstControllerPlugin,
+								"HookROM"
+							);
+						mouseinjectorpresent = 1;
+					}
 					return(TRUE);
 				}
 			}
@@ -169,6 +187,8 @@ void CloseControllerPlugin(void)
 	_CONTROLLER_RomOpen = NULL;
 	_CONTROLLER_WM_KeyDown = NULL;
 	_CONTROLLER_WM_KeyUp = NULL;
+	_CONTROLLER_HookRDRAM = NULL;
+	_CONTROLLER_HookROM = NULL;
 }
 
 /*
@@ -422,6 +442,44 @@ void CONTROLLER_WM_KeyUp(WPARAM _wParam, LPARAM _lParam)
 		__try
 		{
 			_CONTROLLER_WM_KeyUp(_wParam, _lParam);
+		}
+
+		__except(NULL, EXCEPTION_EXECUTE_HANDLER)
+		{
+		}
+	}
+}
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+void CONTROLLER_HookRDRAM(DWORD *Mem, int OCFactor)
+{
+	if(_CONTROLLER_HookRDRAM != NULL)
+	{
+		__try
+		{
+			_CONTROLLER_HookRDRAM(Mem, OCFactor);
+		}
+
+		__except(NULL, EXCEPTION_EXECUTE_HANDLER)
+		{
+		}
+	}
+}
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+void CONTROLLER_HookROM(DWORD *Rom)
+{
+	if(_CONTROLLER_HookROM != NULL)
+	{
+		__try
+		{
+			_CONTROLLER_HookROM(Rom);
 		}
 
 		__except(NULL, EXCEPTION_EXECUTE_HANDLER)

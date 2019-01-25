@@ -35,7 +35,7 @@
 ROMLIST_ENTRY	*romlist[MAX_ROMLIST];
 int				romlist_count = 0;
 int				romlist_sort_method = ROMLIST_GAMENAME;
-int				romlistNameToDisplay = ROMLIST_DISPLAY_ALTER_NAME;
+int				romlistNameToDisplay = ROMLIST_DISPLAY_FILENAME;
 int				selected_rom_index;
 static char		savedrompath[_MAX_PATH];
 int				romListHeaderClickedColumn = 0;
@@ -444,6 +444,9 @@ LRESULT APIENTRY RomListDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 	char	countryname[80];
 	int		tvsystem;
 	/*~~~~~~~~~~~~~~~~~~~~~~~*/
+
+	if(!strcmp(romlist[selected_rom_index]->pinientry->Game_Name, "Perfect Dark") || !strcmp(romlist[selected_rom_index]->pinientry->Game_Name, "GoldenEye X") || strstr(romlist[selected_rom_index]->pinientry->Game_Name, "Perfect") != NULL)
+		romlist[selected_rom_index]->pinientry->Eeprom_size = EEPROMSIZE_16KB;
 
 	switch(message)
 	{

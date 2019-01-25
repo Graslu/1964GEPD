@@ -303,7 +303,7 @@ void VIDEO_ChangeWindow(int window)
 		EnableWindow((HWND)gui.hMenu1964main, FALSE);
 		ShowWindow((HWND)gui.hMenu1964main, FALSE);
 		ShowWindow(gui.hStatusBar, SW_HIDE);
-		ShowCursor(FALSE);
+		HideCursor(TRUE);
 	}
 	else
 	{
@@ -314,7 +314,7 @@ void VIDEO_ChangeWindow(int window)
 		ShowWindow(gui.hToolBar, SW_SHOW);
 		ShowWindow(gui.hStatusBar, SW_SHOW);
 		ShowWindow((HWND)gui.hMenu1964main, TRUE);
-		ShowCursor(TRUE);
+		HideCursor(FALSE);
 		DockStatusBar();
 	}
 }

@@ -43,6 +43,7 @@
 #define _s8		__int8				/* 8 bit */
 
 extern void __cdecl DisplayError(char *Message, ...);
+extern void HideCursor(int state);
 
 typedef struct
 {
@@ -81,4 +82,5 @@ extern t_rominfo		rominfo;
 extern volatile int		Rom_Loaded;
 extern char				*CURRENT1964VERSION;
 extern char				generalmessage[256];
+int						showcursor;
 #endif /* _GLOBALS_H__1964_ */
