@@ -188,13 +188,17 @@ void CALLBACK TimerProc(HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime)
 					CodeList_ApplyAllCode(INGAME);
 #endif
 				}
-				if(emuoptions.PDSpeedHack && emuoptions.OverclockFactor != 1 && (!strcmp(currentromoptions.Game_Name, "Perfect Dark") || !strcmp(currentromoptions.Game_Name, "GoldenEye X") || strstr(currentromoptions.Game_Name, "Perfect")))
-					PDSpeedHack();
-				if(emustatus.gepd_pause)
+
+				if(rominfo.TV_System == TV_SYSTEM_NTSC) // if USA ROM
 				{
-					emustatus.gepd_pause--;
-					if(!emustatus.gepd_pause)
-						GEPDPause(FALSE);
+					if(emuoptions.PDSpeedHack && emuoptions.OverclockFactor != 1 && (!strcmp(currentromoptions.Game_Name, "Perfect Dark") || !strcmp(currentromoptions.Game_Name, "GoldenEye X") || strstr(currentromoptions.Game_Name, "Perfect")))
+						PDSpeedHack();
+					if(emustatus.gepd_pause)
+					{
+						emustatus.gepd_pause--;
+						if(!emustatus.gepd_pause)
+							GEPDPause(FALSE);
+					}
 				}
 			}
 		}
@@ -3058,11 +3062,14 @@ static BOOL alreadypaused = FALSE;
 void GEPDPause(BOOL pause)
 {
 	int game;
-	if(!strcmp(currentromoptions.Game_Name, "GOLDENEYE") || strstr(currentromoptions.Game_Name, "GOLD"))
+	if(rominfo.TV_System != TV_SYSTEM_NTSC) // not USA ROM
+		return;
+	if(!strcmp(currentromoptions.Game_Name, "GOLDENEYE") || strstr(currentromoptions.Game_Name, "GOLD") != NULL)
 		game = 0;
-	else if(!strcmp(currentromoptions.Game_Name, "Perfect Dark") || !strcmp(currentromoptions.Game_Name, "GoldenEye X") || strstr(currentromoptions.Game_Name, "Perfect"))
+	else if(!strcmp(currentromoptions.Game_Name, "Perfect Dark") || !strcmp(currentromoptions.Game_Name, "GoldenEye X") || strstr(currentromoptions.Game_Name, "Perfect") != NULL)
 		game = 1;
-	else return;
+	else
+		return;
 	if(pause)
 	{
 		emustatus.gepd_pause = 2;
@@ -3170,10 +3177,15 @@ void PrepareBeforePlay(int IsFullScreen)
 	/* Setting options */
 	RomListSelectLoadedRomEntry();
 	GenerateCurrentRomOptions();
-	if(!strcmp(currentromoptions.Game_Name, "GOLDENEYE") || strstr(currentromoptions.Game_Name, "GOLD"))
-		emuoptions.UsingRspPlugin = TRUE;
-	else if(!strcmp(currentromoptions.Game_Name, "Perfect Dark") || !strcmp(currentromoptions.Game_Name, "GoldenEye X") || strstr(currentromoptions.Game_Name, "Perfect"))
-		emuoptions.UsingRspPlugin = FALSE;
+
+	if(rominfo.TV_System == TV_SYSTEM_NTSC) // if USA ROM
+	{
+		if(!strcmp(currentromoptions.Game_Name, "GOLDENEYE") || strstr(currentromoptions.Game_Name, "GOLD") != NULL)
+			emuoptions.UsingRspPlugin = TRUE;
+		else if(!strcmp(currentromoptions.Game_Name, "Perfect Dark") || !strcmp(currentromoptions.Game_Name, "GoldenEye X") || strstr(currentromoptions.Game_Name, "Perfect") != NULL)
+			emuoptions.UsingRspPlugin = FALSE;
+	}
+
 	init_whole_mem_func_array();					/* Needed here. The tlb function pointers change. */
 	ResetRdramSize(currentromoptions.RDRAM_Size);
 	if(strcpy(current_cheatcode_rom_internal_name, currentromoptions.Game_Name) != 0)
