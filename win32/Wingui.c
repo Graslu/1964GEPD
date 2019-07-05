@@ -3076,6 +3076,7 @@ void PDSpeedHack(void)
 }
 
 #undef GE_readfiringrate
+#undef GE_menupage
 #undef PD_tickrate
 #undef PD_timer
 #undef PD_mpspeed
