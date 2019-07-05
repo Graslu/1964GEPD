@@ -3031,6 +3031,7 @@ void SetCounterFactor(int factor)
  */
 
 #define GE_readfiringrate 0x92B1C // function used to return current weapon's firing rate - only for automatics (single shot weapons can be left as they are)
+#define GE_menupage 0x8002A8C0 // menu page id, used to check if it is safe to inject the firing rate patch
 #define PD_tickrate 0x80099FC0 // game loop's tickrate (used to detect when PD is running at lower framerate - PD was designed to halve game tickrate when detected bottlenecks)
 #define PD_timer 0x8008DBD0 // we intentionally screw with this timer address to force PD to run at unlocked speed
 #define PD_mpspeed 0x800ACB91 // used to check if the match is set to slow motion or normal speed
@@ -3042,7 +3043,7 @@ static const unsigned int codearray[34] = {0x3C028006, 0x8C42EE10, 0x240E0007, 0
 
 void GEFiringRateHack(void)
 {
-	if(gMemoryState.ROM_Image[GE_readfiringrate] != 0x00) // if nop instruction doesn't exists
+	if(LOAD_UWORD_PARAM(GE_menupage) > 10U || gMemoryState.ROM_Image[GE_readfiringrate + 1] != 0x00) // if game isn't safe to patch or nop instruction doesn't exists
 		return;
 	gMemoryState.ROM_Image[GE_readfiringrate] = 0x00021040 & 0xFF; // apply firing rate 60fps hack
 	gMemoryState.ROM_Image[GE_readfiringrate + 1] = (0x00021040 >> 8) & 0xFF;
