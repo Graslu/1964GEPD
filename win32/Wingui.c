@@ -191,7 +191,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime)
 
 				if(rominfo.TV_System == TV_SYSTEM_NTSC) // if USA ROM
 				{
-					if(emuoptions.GEFiringRateHack && (!strcmp(currentromoptions.Game_Name, "GOLDENEYE") || strstr(currentromoptions.Game_Name, "GOLD") != NULL))
+					if(emuoptions.GEFiringRateHack && emuoptions.OverclockFactor != 1 && (!strcmp(currentromoptions.Game_Name, "GOLDENEYE") || strstr(currentromoptions.Game_Name, "GOLD") != NULL))
 						GEFiringRateHack();
 					else if(emuoptions.PDSpeedHack && emuoptions.OverclockFactor != 1 && (!strcmp(currentromoptions.Game_Name, "Perfect Dark") || !strcmp(currentromoptions.Game_Name, "GoldenEye X") || strstr(currentromoptions.Game_Name, "Perfect")))
 						PDSpeedHack();
@@ -3043,7 +3043,7 @@ static const unsigned int codearray[34] = {0x3C028006, 0x8C42EE10, 0x240E0007, 0
 
 void GEFiringRateHack(void)
 {
-	if(LOAD_UWORD_PARAM(GE_menupage) > 10U || gMemoryState.ROM_Image[GE_readfiringrate + 1] != 0x00) // if game isn't safe to patch or nop instruction doesn't exists
+	if((LOAD_UWORD_PARAM(GE_menupage) == 0 || LOAD_UWORD_PARAM(GE_menupage) > 10U) || gMemoryState.ROM_Image[GE_readfiringrate + 1] != 0x00) // if game isn't safe to patch or nop instruction doesn't exists
 		return;
 	gMemoryState.ROM_Image[GE_readfiringrate] = 0x00021040 & 0xFF; // apply firing rate 60fps hack
 	gMemoryState.ROM_Image[GE_readfiringrate + 1] = (0x00021040 >> 8) & 0xFF;
