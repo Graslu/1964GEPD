@@ -147,6 +147,7 @@ int ReadConfiguration(void)
 
 	emuoptions.dma_in_segments = INI_OptionReadUInt("DmaInSegments");
 	emuoptions.OverclockFactor = INI_OptionReadUInt("OverclockFactor") > 0 && INI_OptionReadUInt("OverclockFactor") <= 18 ? INI_OptionReadUInt("OverclockFactor") : 9;
+	emuoptions.GEFiringRateHack = INI_OptionReadUInt("GEFiringRateHack");
 	emuoptions.PDSpeedHack = INI_OptionReadUInt("PDSpeedHack");
 	emuoptions.PDSpeedHackBoost = INI_OptionReadUInt("PDSpeedHackBoost");
 	emuoptions.SyncVI = TRUE;
@@ -381,6 +382,8 @@ void WriteConfiguration(void)
 
 		INI_OptionWriteUInt("OverclockFactor", emuoptions.OverclockFactor);
 
+		INI_OptionWriteUInt("GEFiringRateHack", emuoptions.GEFiringRateHack);
+
 		INI_OptionWriteUInt("PDSpeedHack", emuoptions.PDSpeedHack);
 
 		INI_OptionWriteUInt("PDSpeedHackBoost", emuoptions.PDSpeedHackBoost);
@@ -539,6 +542,7 @@ void InitAll1964Options(void)
 	emuoptions.dma_in_segments = TRUE;
 	emuoptions.SyncVI = TRUE;
 	emuoptions.OverclockFactor = 9;
+	emuoptions.GEFiringRateHack = TRUE;
 	emuoptions.PDSpeedHack = TRUE;
 	emuoptions.PDSpeedHackBoost = FALSE;
 	

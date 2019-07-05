@@ -61,6 +61,7 @@ struct EmuOptions
 	BOOL	SyncVI;
 	BOOL	UsingRspPlugin;
 	int		OverclockFactor;
+	BOOL	GEFiringRateHack;
 	BOOL	PDSpeedHack;
 	BOOL	PDSpeedHackBoost;
 };

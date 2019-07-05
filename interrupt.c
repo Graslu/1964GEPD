@@ -553,8 +553,8 @@ void Trigger_VIInterrupt(void)
 #endif
 	}
 	
-	/* Apply the PD 60fps timing hack */
-	if(emuoptions.PDSpeedHack && emuoptions.OverclockFactor != 1)
+	/* Apply the PD 60fps NTSC timing hack */
+	if(emuoptions.PDSpeedHack && emuoptions.OverclockFactor != 1 && rominfo.TV_System == TV_SYSTEM_NTSC)
 		PDTimingHack();
 
 	/* set the interrupt to fire */

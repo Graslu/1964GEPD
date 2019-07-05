@@ -244,6 +244,7 @@ BEGIN
         MENUITEM "15 Times",                    ID_OVERCLOCK15
         MENUITEM "18 Times",                    ID_OVERCLOCK18
 		MENUITEM SEPARATOR
+        MENUITEM "GE Firing Rate Hack",         ID_GEFIRINGHACK
         MENUITEM "PD Speed-Hack",               ID_PDSPEEDHACK
         MENUITEM "Boost Speed-Hack Freq",       ID_PDSPEEDHACKBOOST
     END

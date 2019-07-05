@@ -55,6 +55,7 @@ void				PrepareBeforePlay(int IsFullScreen);
 void				KillCPUThread(void);
 void				SetOverclockFactor(int factor);
 void				SetCounterFactor(int);
+void				GEFiringRateHack(void);
 void				PDTimingHack(void);
 void				PDSpeedHack(void);
 void				GEPDPause(BOOL pause);

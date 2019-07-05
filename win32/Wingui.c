@@ -191,7 +191,9 @@ void CALLBACK TimerProc(HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime)
 
 				if(rominfo.TV_System == TV_SYSTEM_NTSC) // if USA ROM
 				{
-					if(emuoptions.PDSpeedHack && emuoptions.OverclockFactor != 1 && (!strcmp(currentromoptions.Game_Name, "Perfect Dark") || !strcmp(currentromoptions.Game_Name, "GoldenEye X") || strstr(currentromoptions.Game_Name, "Perfect")))
+					if(emuoptions.GEFiringRateHack && (!strcmp(currentromoptions.Game_Name, "GOLDENEYE") || strstr(currentromoptions.Game_Name, "GOLD") != NULL))
+						GEFiringRateHack();
+					else if(emuoptions.PDSpeedHack && emuoptions.OverclockFactor != 1 && (!strcmp(currentromoptions.Game_Name, "Perfect Dark") || !strcmp(currentromoptions.Game_Name, "GoldenEye X") || strstr(currentromoptions.Game_Name, "Perfect")))
 						PDSpeedHack();
 					if(emustatus.gepd_pause)
 					{
@@ -836,13 +838,13 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_PLUGINS:
 		case ID_BUTTON_SETUP_PLUGINS:
 			if (!guistatus.IsFullScreen)
-			DialogBox(gui.hInst, "PLUGINS", hWnd, (DLGPROC) PluginsDialog);
+				DialogBox(gui.hInst, "PLUGINS", hWnd, (DLGPROC) PluginsDialog);
 			break;
 		case ID_CHECKWEB:
 		case ID_ONLINE_HELP:
 		case ID_BUTTON_HELP:
 			if (!guistatus.IsFullScreen)
-			MessageBox(NULL, "If you are having issues, please read the file BUNDLE_README.txt located in the 1964 directory.", "Help", MB_OK);
+				MessageBox(gui.hwnd1964main, "If you are having issues, please read the file BUNDLE_README.txt located in the 1964 directory.", "Help", MB_OK);
 			break;
 		case ID_CONFIGURE_VIDEO:
 			VIDEO_DllConfig(hWnd);
@@ -861,6 +863,22 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case ID_OVERCLOCK18:
 			SetOverclockFactor((LOWORD(wParam) - ID_OVERCLOCK6 + 2) * 3);
 			SetCounterFactor(COUTERFACTOR_1);
+			break;
+		case ID_GEFIRINGHACK:
+			if(emuoptions.GEFiringRateHack)
+			{
+				CheckMenuItem(gui.hMenu1964main, ID_GEFIRINGHACK, MF_UNCHECKED);
+				emuoptions.GEFiringRateHack = FALSE;
+				if (!guistatus.IsFullScreen && emustatus.Emu_Is_Running)
+					MessageBox(gui.hwnd1964main, "Please restart ROM to disable firing rate hack.", "Information", MB_ICONINFORMATION | MB_OK);
+			}
+			else
+			{
+				CheckMenuItem(gui.hMenu1964main, ID_GEFIRINGHACK, MF_CHECKED);
+				emuoptions.GEFiringRateHack = TRUE;
+				if (!guistatus.IsFullScreen && emustatus.Emu_Is_Running)
+					MessageBox(gui.hwnd1964main, "Please restart ROM to enable firing rate hack.", "Information", MB_ICONINFORMATION | MB_OK);
+			}
 			break;
 		case ID_PDSPEEDHACK:
 			if(emuoptions.PDSpeedHack)
@@ -887,7 +905,8 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, MF_CHECKED);
 				emuoptions.PDSpeedHackBoost = TRUE;
-				MessageBox(gui.hwnd1964main, "The PD Speed-Hack can be unstable when injected too quickly.\nIf you experience clock skips or instant deaths with PD, turn off\nBoost Speed-Hack Freq.", "Information", MB_ICONINFORMATION | MB_OK);
+				if (!guistatus.IsFullScreen)
+					MessageBox(gui.hwnd1964main, "The PD Speed-Hack can be unstable when injected too quickly.\nIf you experience clock skips or instant deaths with PD, turn off\nBoost Speed-Hack Freq.", "Information", MB_ICONINFORMATION | MB_OK);
 			}
 			break;
 		case ID_ABOUT_WARRANTY:
@@ -2971,8 +2990,10 @@ void SetOverclockFactor(int factor)
 	else
 		emustatus.gepd_pause = 2;
 	emuoptions.OverclockFactor = factor;
+	EnableMenuItem(gui.hMenu1964main, ID_GEFIRINGHACK, factor != 1 ? MF_ENABLED : MF_GRAYED);
 	EnableMenuItem(gui.hMenu1964main, ID_PDSPEEDHACK, factor != 1 ? MF_ENABLED : MF_GRAYED);
 	EnableMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, emuoptions.PDSpeedHack && factor != 1 ? MF_ENABLED : MF_GRAYED);
+	CheckMenuItem(gui.hMenu1964main, ID_GEFIRINGHACK, emuoptions.GEFiringRateHack && factor != 1 ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACK, emuoptions.PDSpeedHack && factor != 1 ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, emuoptions.PDSpeedHack && emuoptions.PDSpeedHackBoost && factor != 1 ? MF_CHECKED : MF_UNCHECKED);
 	if(mouseinjectorpresent)
@@ -3009,6 +3030,7 @@ void SetCounterFactor(int factor)
  =======================================================================================================================
  */
 
+#define GE_readfiringrate 0x92B1C // function used to return current weapon's firing rate - only for automatics (single shot weapons can be left as they are)
 #define PD_tickrate 0x80099FC0 // game loop's tickrate (used to detect when PD is running at lower framerate - PD was designed to halve game tickrate when detected bottlenecks)
 #define PD_timer 0x8008DBD0 // we intentionally screw with this timer address to force PD to run at unlocked speed
 #define PD_mpspeed 0x800ACB91 // used to check if the match is set to slow motion or normal speed
@@ -3017,6 +3039,16 @@ void SetCounterFactor(int factor)
 #define PD_newcodearealastcode 0x803C7964 // used to check if memory is safe to write
 
 static const unsigned int codearray[34] = {0x3C028006, 0x8C42EE10, 0x240E0007, 0x51C2000E, 0x3C02800A, 0x3C02800B, 0x8042CB97, 0x304E0080, 0x15C00017, 0x304E0040, 0x11C00012, 0x3C02800A, 0x8C42A424, 0x14400012, 0x00000000, 0x10000010, 0x00129040, 0x00000000, 0x804221D3, 0x30420040, 0x10400007, 0x00000000, 0x3C02800A, 0x8C42A424, 0x14400007, 0x00000000, 0x10000005, 0x00129040, 0x3C02800A, 0x8C42A424, 0x54400001, 0x00129040, 0x0BC5B3B5, 0x3631EBC2}; // hijack timing code to allow combat boost at 60fps
+
+void GEFiringRateHack(void)
+{
+	if(gMemoryState.ROM_Image[GE_readfiringrate] != 0x00) // if nop instruction doesn't exists
+		return;
+	gMemoryState.ROM_Image[GE_readfiringrate] = 0x00021040 & 0xFF; // apply firing rate 60fps hack
+	gMemoryState.ROM_Image[GE_readfiringrate + 1] = (0x00021040 >> 8) & 0xFF;
+	gMemoryState.ROM_Image[GE_readfiringrate + 2] = (0x00021040 >> 16) & 0xFF;
+	gMemoryState.ROM_Image[GE_readfiringrate + 3] = (0x00021040 >> 24) & 0xFF;
+}
 
 void PDTimingHack(void)
 {
@@ -3042,6 +3074,7 @@ void PDSpeedHack(void)
 	}
 }
 
+#undef GE_readfiringrate
 #undef PD_tickrate
 #undef PD_timer
 #undef PD_mpspeed
