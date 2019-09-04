@@ -751,33 +751,27 @@ BOOL FileIO_CreateMempakFile(char *filename)
 	/*~~~~~~~~~~~~~~~~~~~~*/
 
 	dest = fopen(filename, "wb");
-	if(dest)
-	{
-		fwrite(&gzipped_defaultm0, sizeof(char), sizeof(gzipped_defaultm0), dest);
-		fclose(dest);
-	}
-	else
+	if(dest == NULL)
 	{
 		DisplayError("Unable to create new mempak file, please check your save directory setting.");
 		return FALSE;
 	}
+	fwrite(&gzipped_defaultm0, sizeof(char), sizeof(gzipped_defaultm0), dest);
+	fclose(dest);
 
 	gztempfile = gzopen(filename, "rb");
 	gzread(gztempfile, temp, 1024 * 32);
 	gzclose(gztempfile);
 
 	dest = fopen(filename, "wb");
-	if(dest)
-	{
-		fwrite(temp, 1024 * 32, 1, dest);
-		fclose(dest);
-	}
-	else
+	if(dest == NULL)
 	{
 		DisplayError("Unable to create new mempak file, please check your save directory setting.");
 		return FALSE;
 	}
 
+	fwrite(temp, 1024 * 32, 1, dest);
+	fclose(dest);
 	return TRUE;
 }
 
@@ -944,7 +938,7 @@ void FileIO_WriteMemPak(int pak_no)
 			TRACE1("Write MEMPAK to file: %s", temp);
 		}
 #endif
-		fseek(stream, (1024 * 32 * pak_no), SEEK_SET);
+		fseek(stream, 0, SEEK_SET);
 		fwrite(gamesave.mempak[pak_no], 1024 * 32, 1, stream);
 		fclose(stream);
 	}
@@ -990,7 +984,7 @@ void FileIO_LoadMemPak(int pak_no)
 		TRACE1("Load MEMPAK from file: %s", temp);
 	}
 #endif
-	fseek(stream, (1024 * 32 * pak_no), SEEK_SET);
+	fseek(stream, 0, SEEK_SET);
 	fread(gamesave.mempak[pak_no], 1024 * 32, 1, stream);
 	fclose(stream);
 }
