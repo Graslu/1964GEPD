@@ -127,7 +127,7 @@ int ReadConfiguration(void)
 
 	emuoptions.auto_run_rom = 1; //0.8.5: This is no longer a user option
 	emuoptions.auto_full_screen = INI_OptionReadUInt("AutoFullScreen");
-	emuoptions.auto_apply_cheat_code = INI_OptionReadUInt("AutoApplyCheat");
+	//emuoptions.auto_apply_cheat_code = INI_OptionReadUInt("AutoApplyCheat");
 	emuoptions.UsingRspPlugin = INI_OptionReadUInt("UsingRspPlugin");
 
 	guioptions.pause_at_inactive = INI_OptionReadUInt("PauseWhenInactive");
@@ -374,7 +374,7 @@ void WriteConfiguration(void)
 
 		INI_OptionWriteUInt("AutoFullScreen", emuoptions.auto_full_screen);
 
-		INI_OptionWriteUInt("AutoApplyCheat", emuoptions.auto_apply_cheat_code);
+		//INI_OptionWriteUInt("AutoApplyCheat", emuoptions.auto_apply_cheat_code);
 
 		INI_OptionWriteUInt("UsingRspPlugin", emuoptions.UsingRspPlugin);
 
