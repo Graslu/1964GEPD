@@ -51,6 +51,8 @@ void				SaveStateByDialog(int format);
 void				LoadStateByDialog(int format);
 void				EnableStateMenu(void);
 void				DisableStateMenu(void);
+void				SetWindowBorderless(void);
+void				UnsetWindowBorderless(void);
 void				PrepareBeforePlay(int IsFullScreen);
 void				KillCPUThread(void);
 void				SetOverclockFactor(int factor);
@@ -136,6 +138,7 @@ struct GUIOPTIONS
 	BOOL	display_romlist;
 	BOOL	display_statusbar;
 	BOOL	highfreqtimer;
+	BOOL	borderless_fullscreen;
 };
 
 extern struct GUIOPTIONS	guioptions;
@@ -151,6 +154,7 @@ struct GUISTATUS
 	BOOL	window_is_minimized;
 	BOOL	block_menu;					/* Block all menu command while 1964 is busy */
 	int		IsFullScreen;
+	BOOL	IsBorderless;
 };
 extern struct GUISTATUS guistatus;
 

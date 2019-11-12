@@ -725,6 +725,7 @@
 #define IDC_VEC296                      1496
 #define IDC_VEC297                      1497
 #define IDC_COL_SEL_TREE                1497
+#define IDC_OPTION_BORDERLESSFULLSCREEN 1497
 #define IDC_VEC298                      1498
 #define IDC_COLSEL_UP                   1498
 #define IDC_COLSEL_DOWN                 1499

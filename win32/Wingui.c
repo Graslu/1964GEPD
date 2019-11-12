@@ -155,7 +155,7 @@ void CALLBACK TimerProc(HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime)
 				viCountePerSecond = 0;
 				QueryPerformanceCounter(&LastSecondTime);
 
-				if( guistatus.IsFullScreen == FALSE )
+				if( guistatus.IsFullScreen == FALSE && guioptions.display_statusbar == TRUE)
 				{
 					SetStatusBarText(1, generalmessage);
 
@@ -328,6 +328,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 	emustatus.cpucore = DYNACOMPILER;
 	emustatus.Emu_Is_Resetting = FALSE;
 	guistatus.IsFullScreen = FALSE;
+	guistatus.IsBorderless = FALSE;
 
 #ifdef DEBUG_COMMON
 	init_debug_options();
@@ -825,7 +826,15 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				if(emustatus.Emu_Is_Paused && !guistatus.IsFullScreen)
 					ResumeEmulator(DO_NOTHING_AFTER_PAUSE);
-				VIDEO_ChangeWindow(guistatus.IsFullScreen);
+				if(guioptions.borderless_fullscreen == TRUE)
+				{
+					if(!guistatus.IsBorderless)
+						SetWindowBorderless();
+					else
+						UnsetWindowBorderless();
+				}
+				else
+					VIDEO_ChangeWindow(guistatus.IsFullScreen);
 			}
 			break;
 		case ID_PLUGINS_SCREENSHOTS:
@@ -1537,7 +1546,15 @@ void Play(BOOL WithFullScreen)
 		{
 			if(guistatus.IsFullScreen == 0)
 			{
-				VIDEO_ChangeWindow(guistatus.IsFullScreen);
+				if(guioptions.borderless_fullscreen == TRUE)
+				{
+					if(!guistatus.IsBorderless)
+						SetWindowBorderless();
+					else
+						UnsetWindowBorderless();
+				}
+				else
+					VIDEO_ChangeWindow(guistatus.IsFullScreen);
 			}
 		}
 	}
@@ -2726,6 +2743,14 @@ LRESULT APIENTRY OptionsDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 		SendDlgItemMessage
 		(
 			hDlg,
+			IDC_OPTION_BORDERLESSFULLSCREEN,
+			BM_SETCHECK,
+			guioptions.borderless_fullscreen ? BST_CHECKED : BST_UNCHECKED,
+			0
+		);
+		SendDlgItemMessage
+		(
+			hDlg,
 			IDC_OPTION_ROMBROWSER,
 			BM_SETCHECK,
 			guioptions.display_romlist ? BST_CHECKED : BST_UNCHECKED,
@@ -2795,6 +2820,7 @@ LRESULT APIENTRY OptionsDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 				emuoptions.auto_apply_cheat_code = (SendDlgItemMessage(hDlg, IDC_DEFAULTOPTIONS_AUTOCHEAT, BM_GETCHECK, 0, 0) == BST_CHECKED);
 				guioptions.pause_at_menu = (SendDlgItemMessage(hDlg, IDC_DEFAULTOPTIOS_PAUSEONMENU, BM_GETCHECK, 0, 0) == BST_CHECKED);
 				guioptions.pause_at_inactive = (SendDlgItemMessage(hDlg, IDC_DEFAULTOPTIONS_PAUSEWHENINACTIVE, BM_GETCHECK, 0, 0) == BST_CHECKED);
+				guioptions.borderless_fullscreen = (SendDlgItemMessage(hDlg, IDC_OPTION_BORDERLESSFULLSCREEN, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 				if
 				(
@@ -2908,6 +2934,12 @@ LRESULT APIENTRY OptionsDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 					MessageBox(gui.hwnd1964main, "Please restart 1964 to apply high frequency settings.", "User Options", MB_OK);
 				guioptions.highfreqtimer = (SendDlgItemMessage(hDlg, IDC_HIGHFREQTIMER, BM_GETCHECK, 0, 0) == BST_CHECKED);
 				guioptions.display_statusbar = (SendDlgItemMessage(hDlg, IDC_DISPLAY_STATUSBAR, BM_GETCHECK, 0, 0) == BST_CHECKED);
+				if(guioptions.display_statusbar == TRUE && guioptions.borderless_fullscreen == TRUE)
+				{
+					MessageBox(gui.hwnd1964main, "Borderless fullscreen will not work with status bar.\n\nTurning off status bar...", "User Options", MB_OK);
+					ShowWindow(gui.hStatusBar, SW_HIDE);
+					guioptions.display_statusbar = FALSE;
+				}
 				guioptions.use_default_save_directory = (SendDlgItemMessage(hDlg, IDC_OPTIONS_USE_DEFAULT_SAVE_DIRECTORY, BM_GETCHECK, 0, 0) == BST_CHECKED);
 				guioptions.use_default_plugin_directory =
 					(
@@ -3187,6 +3219,65 @@ void ResetWindowSizeAsRemembered(void)
 	);
 }
 
+LONG windowedStyle;
+LONG windowedExStyle;
+RECT lastRect;
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+void SetWindowBorderless(void)
+{
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+	RECT	rcToolBar;
+	int     screenWidthPos, screenHeightPos, screenWidth, screenHeight;
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+	guistatus.IsBorderless = TRUE;
+	windowedStyle = GetWindowLong(gui.hwnd1964main, GWL_STYLE);
+	windowedExStyle = GetWindowLong(gui.hwnd1964main, GWL_EXSTYLE);
+
+	GetWindowRect(gui.hToolBar, &rcToolBar);
+	GetWindowRect(gui.hwnd1964main, &lastRect);
+	screenWidthPos = lastRect.left;
+	screenHeightPos = lastRect.top - ((rcToolBar.bottom - rcToolBar.top) / 2);
+	screenWidth = lastRect.right - lastRect.left;
+	screenHeight = lastRect.bottom - lastRect.top;
+
+	SetMenu(gui.hwnd1964main, NULL);
+	ShowWindow(gui.hStatusBar, SW_HIDE);
+	ShowWindow(gui.hToolBar, SW_HIDE);
+	SetWindowLong(gui.hwnd1964main, GWL_STYLE, WS_POPUP);
+	SetWindowLong(gui.hwnd1964main, GWL_EXSTYLE, WS_EX_APPWINDOW | WS_EX_TOPMOST);
+	SetWindowPos(gui.hwnd1964main, NULL, screenWidthPos > 0 ? screenWidthPos : 0, screenHeightPos > 0 ? screenHeightPos : 0, screenWidth > 0 ? screenWidth : 0, screenHeight > 0 ? screenHeight : 0, SWP_NOACTIVATE | SWP_NOZORDER | SWP_SHOWWINDOW);
+}
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+void UnsetWindowBorderless(void)
+{
+	guistatus.IsBorderless = FALSE;
+	SetMenu(gui.hwnd1964main, gui.hMenu1964main);
+	ShowWindow(gui.hStatusBar, SW_SHOW);
+	ShowWindow(gui.hToolBar, SW_SHOW);
+	SetWindowLong(gui.hwnd1964main, GWL_STYLE, windowedStyle);
+	SetWindowLong(gui.hwnd1964main, GWL_EXSTYLE, windowedExStyle);
+
+	SetWindowPos
+	(
+		gui.hwnd1964main,
+		NULL,
+		lastRect.left,
+		lastRect.top,
+		lastRect.right - lastRect.left,
+		lastRect.bottom - lastRect.top,
+		SWP_NOZORDER | SWP_SHOWWINDOW
+	);
+}
+
 extern char critical_msg_buffer[32 * 1024]; /* 32KB */
 
 /*
@@ -3313,6 +3404,7 @@ void AfterStop(void)
 	Close_Save();
 	Close_iPIF();
 
+	UnsetWindowBorderless();
 	ResetWindowSizeAsRemembered();
 
 	emustatus.Emu_Is_Running = FALSE;
