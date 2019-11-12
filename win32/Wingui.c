@@ -1150,16 +1150,22 @@ void ProcessKeyboardInput(UINT message, WPARAM wParam, LPARAM lParam)
 	case VK_F4:
 	case VK_ESCAPE:
 		if (guistatus.IsFullScreen)
-		if(emustatus.Emu_Is_Running)
 		{
-			if(PauseEmulator())
+			if(emustatus.Emu_Is_Running)
 			{
-				VIDEO_ChangeWindow(guistatus.IsFullScreen);
-				ResumeEmulator(DO_NOTHING_AFTER_PAUSE);
+				if(PauseEmulator())
+				{
+					VIDEO_ChangeWindow(guistatus.IsFullScreen);
+					ResumeEmulator(DO_NOTHING_AFTER_PAUSE);
+				}
 			}
 		}
-		if (wParam == VK_F4) 
+		if (wParam == VK_F4)
+		{
+			if(guioptions.borderless_fullscreen == TRUE)
+				UnsetWindowBorderless();
 			CloseROM();
+		}
 	break;
 
 	case 0x30:
@@ -1583,6 +1589,8 @@ void Stop()
 			if(guistatus.IsFullScreen)
 			{
 				VIDEO_ChangeWindow(guistatus.IsFullScreen);
+				if(guioptions.borderless_fullscreen == TRUE)
+					UnsetWindowBorderless();
 			}
 			HideCursor(FALSE);
 			AfterStop();
@@ -3274,7 +3282,7 @@ void UnsetWindowBorderless(void)
 		lastRect.top,
 		lastRect.right - lastRect.left,
 		lastRect.bottom - lastRect.top,
-		SWP_NOZORDER | SWP_SHOWWINDOW
+		SWP_NOACTIVATE | SWP_NOZORDER | SWP_SHOWWINDOW
 	);
 }
 
@@ -3404,7 +3412,6 @@ void AfterStop(void)
 	Close_Save();
 	Close_iPIF();
 
-	UnsetWindowBorderless();
 	ResetWindowSizeAsRemembered();
 
 	emustatus.Emu_Is_Running = FALSE;
