@@ -1160,7 +1160,7 @@ void ProcessKeyboardInput(UINT message, WPARAM wParam, LPARAM lParam)
 				}
 			}
 		}
-		else if(guioptions.borderless_fullscreen == TRUE)
+		else if(guistatus.IsBorderless == TRUE)
 			UnsetWindowBorderless();
 		if (wParam == VK_F4)
 			CloseROM();
