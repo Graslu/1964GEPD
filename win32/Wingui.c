@@ -1160,12 +1160,10 @@ void ProcessKeyboardInput(UINT message, WPARAM wParam, LPARAM lParam)
 				}
 			}
 		}
+		else if(guioptions.borderless_fullscreen == TRUE)
+			UnsetWindowBorderless();
 		if (wParam == VK_F4)
-		{
-			if(guioptions.borderless_fullscreen == TRUE)
-				UnsetWindowBorderless();
 			CloseROM();
-		}
 	break;
 
 	case 0x30:
