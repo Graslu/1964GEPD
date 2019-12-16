@@ -1491,10 +1491,10 @@ CAPTION "Video Plugin"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CTEXT           "Choose A Video Plugin",IDC_STATIC,9,9,76,10
-    DEFPUSHBUTTON   "Jabo\n_________\nInaccurate\nAnd Fast",IDC_JABO,18,39,
-                    58,37,BS_MULTILINE
-    PUSHBUTTON      "GLideN64\n_________\nAccurate\nAnd Slow",IDC_GLIDEN64,
-                    18,83,58,37,BS_MULTILINE
+    DEFPUSHBUTTON   "Jabo\n_________\nInaccurate\nFor Low-End PCs",IDC_JABO,
+                    16,39,63,37,BS_MULTILINE
+    PUSHBUTTON      "GLideN64\n_________\nAccurate\nFor High-End PCs",
+                    IDC_GLIDEN64,16,83,63,37,BS_MULTILINE
     GROUPBOX        "Video Plugins",IDC_STATIC,7,26,81,104
 END
 
