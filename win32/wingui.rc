@@ -1484,6 +1484,20 @@ BEGIN
     LTEXT           "Optional Columns To Display:",IDC_STATIC,8,64,90,8
 END
 
+PICKVIDEOPLUGIN DIALOGEX 0, 0, 95, 137
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
+EXSTYLE WS_EX_PALETTEWINDOW
+CAPTION "Video Plugin"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CTEXT           "Choose A Video Plugin",IDC_STATIC,9,9,76,10
+    DEFPUSHBUTTON   "Jabo\n_________\nInaccurate\nAnd Fast",IDC_JABO,18,39,
+                    58,37,BS_MULTILINE
+    PUSHBUTTON      "GLideN64\n_________\nAccurate\nAnd Slow",IDC_GLIDEN64,
+                    18,83,58,37,BS_MULTILINE
+    GROUPBOX        "Video Plugins",IDC_STATIC,7,26,81,104
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

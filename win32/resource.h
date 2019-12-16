@@ -749,7 +749,9 @@
 #define IDC_VEC311                      1511
 #define IDC_STATIC_NOTE3                1511
 #define IDC_VEC312                      1512
+#define IDC_JABO                        1512
 #define IDC_VEC313                      1513
+#define IDC_GLIDEN64                    1513
 #define IDC_VEC314                      1514
 #define IDC_VEC315                      1515
 #define IDC_VEC316                      1516
@@ -788,7 +790,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        182
 #define _APS_NEXT_COMMAND_VALUE         345
-#define _APS_NEXT_CONTROL_VALUE         1512
+#define _APS_NEXT_CONTROL_VALUE         1514
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
