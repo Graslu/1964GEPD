@@ -105,6 +105,7 @@ BOOL				NeedFreshromListAfterStop = TRUE;
 void					ToggleDebugOptions(WPARAM wParam);
 #endif
 LRESULT APIENTRY		OptionsDialog(HWND hDlg, unsigned message, WORD wParam, LONG lParam);
+LRESULT APIENTRY		SetVideoPluginDialog(HWND hDlg, unsigned message, WORD wParam, LONG lParam);
 
 void					SelectVISpeed(WPARAM wParam);
 void					SetupAdvancedMenus(void);
@@ -460,8 +461,21 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 
 	SetFocus(gui.hwnd1964main);
 	//CreateOptionsDialog();
-	if(firstlaunch1964) // open the change ROM directory dialog window on first launch
+	if(firstlaunch1964) // ask user what video plugin they wish to use and open the change ROM directory dialog window on first launch
+	{
+		/*~~~~~~~~~~~~*/
+		char temp_video_plugin[256];
+		/*~~~~~~~~~~~~*/
+
+		strcpy(temp_video_plugin, gRegSettings.VideoPlugin);
+		DialogBox(gui.hInst, "PICKVIDEOPLUGIN", gui.hwnd1964main, (DLGPROC)SetVideoPluginDialog);
+		if(strcmp(gRegSettings.VideoPlugin, temp_video_plugin) != 0) // if plugin choice is different to default plugin, load new plugin
+		{
+			CloseVideoPlugin();
+			LoadPlugins(LOAD_VIDEO_PLUGIN);
+		}
 		ChangeDirectory();
+	}
 
 
 _HOPPITY:
@@ -2992,6 +3006,32 @@ LRESULT APIENTRY OptionsDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 				EndDialog(hDlg, TRUE);
 				return(TRUE);
 			}
+		}
+	}
+
+	return(FALSE);
+}
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+LRESULT APIENTRY SetVideoPluginDialog(HWND hDlg, unsigned message, WORD wParam, LONG lParam)
+{
+	switch(message)
+	{
+	case WM_COMMAND:
+		switch(wParam)
+		{
+		case IDC_JABO:
+			strcpy(gRegSettings.VideoPlugin, "Jabo_Direct3D8.dll");
+			EndDialog(hDlg, TRUE);
+			return(TRUE);
+		case IDC_GLIDEN64:
+			strcpy(gRegSettings.VideoPlugin, "GLideN64.dll");
+		default:
+			EndDialog(hDlg, TRUE);
+			return(TRUE);
 		}
 	}
 
