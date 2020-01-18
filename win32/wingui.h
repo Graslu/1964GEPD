@@ -139,6 +139,7 @@ struct GUIOPTIONS
 	BOOL	display_statusbar;
 	BOOL	highfreqtimer;
 	BOOL	borderless_fullscreen;
+	BOOL	hide_cursor_on_launch;
 };
 
 extern struct GUIOPTIONS	guioptions;

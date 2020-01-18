@@ -2771,6 +2771,14 @@ LRESULT APIENTRY OptionsDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 		SendDlgItemMessage
 		(
 			hDlg,
+			IDC_HIDEMOUSEONLAUNCH,
+			BM_SETCHECK,
+			guioptions.hide_cursor_on_launch ? BST_CHECKED : BST_UNCHECKED,
+			0
+		);
+		SendDlgItemMessage
+		(
+			hDlg,
 			IDC_OPTION_ROMBROWSER,
 			BM_SETCHECK,
 			guioptions.display_romlist ? BST_CHECKED : BST_UNCHECKED,
@@ -2841,6 +2849,7 @@ LRESULT APIENTRY OptionsDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 				guioptions.pause_at_menu = (SendDlgItemMessage(hDlg, IDC_DEFAULTOPTIOS_PAUSEONMENU, BM_GETCHECK, 0, 0) == BST_CHECKED);
 				guioptions.pause_at_inactive = (SendDlgItemMessage(hDlg, IDC_DEFAULTOPTIONS_PAUSEWHENINACTIVE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 				guioptions.borderless_fullscreen = (SendDlgItemMessage(hDlg, IDC_OPTION_BORDERLESSFULLSCREEN, BM_GETCHECK, 0, 0) == BST_CHECKED);
+				guioptions.hide_cursor_on_launch = (SendDlgItemMessage(hDlg, IDC_HIDEMOUSEONLAUNCH, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 				if
 				(
@@ -3349,6 +3358,10 @@ void PrepareBeforePlay(int IsFullScreen)
 	/* Setting options */
 	RomListSelectLoadedRomEntry();
 	GenerateCurrentRomOptions();
+
+	/* Hide cursor */
+	if(guioptions.hide_cursor_on_launch)
+		HideCursor(TRUE);
 
 	if(rominfo.TV_System == TV_SYSTEM_NTSC) // if USA ROM
 	{
