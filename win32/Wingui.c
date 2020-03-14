@@ -3120,7 +3120,7 @@ void SetCounterFactor(int factor)
 #define GE_readfiringrate 0x92B1C // function used to return current weapon's firing rate - only for automatics (single shot weapons can be left as they are)
 #define GE_menupage 0x8002A8C0 // menu page id, used to check if it is safe to inject the firing rate patch
 #define PD_tickrate 0x80099FC0 // game loop's tickrate (used to detect when PD is running at lower framerate - PD was designed to halve game tickrate when detected bottlenecks)
-#define PD_timer 0x8008DBD0 // we intentionally screw with this timer address to force PD to run at unlocked speed
+#define PD_timer 0x80099FE8 // we intentionally screw with this timer address to force PD to run at unlocked speed
 #define PD_mpspeed 0x800ACB91 // used to check if the match is set to slow motion or normal speed
 #define PD_masterclock 0x8038CECC // location of master clock code (TLB'd to 7F)
 #define PD_newcodearea 0x803C78E0 // free area to write new timing code for 60fps mode
@@ -3157,8 +3157,8 @@ void PDSpeedHack(void)
 	{
 		for(bruteforce = 0; bruteforce < (emuoptions.PDSpeedHackBoost ? 48 : 24); bruteforce++)
 			LOAD_UWORD_PARAM(PD_timer) = 0x00000000; // trick the system into thinking there is plenty of room left to run at full speed
-		Sleep(emuoptions.PDSpeedHackBoost ? 8 : 4);
-		LOAD_UWORD_PARAM(PD_timer) = 0x00010000; // set clock back to default (reset fps lock to 60)
+		Sleep(emuoptions.PDSpeedHackBoost ? 12 : 8);
+		LOAD_UWORD_PARAM(PD_timer) = 0x00000001; // set clock back to default (reset fps lock to 60)
 	}
 }
 
