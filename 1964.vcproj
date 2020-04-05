@@ -385,12 +385,6 @@
 				RelativePath=".\Globals.h">
 			</File>
 			<File
-				RelativePath=".\Kaillera\Kaillera.c">
-			</File>
-			<File
-				RelativePath=".\Kaillera\Kaillera.h">
-			</File>
-			<File
 				RelativePath=".\R4300i.c">
 			</File>
 			<File
@@ -470,12 +464,6 @@
 			</File>
 			<File
 				RelativePath=".\n64rcp.h">
-			</File>
-			<File
-				RelativePath=".\netplay.c">
-			</File>
-			<File
-				RelativePath=".\netplay.h">
 			</File>
 			<File
 				RelativePath=".\profiler.c">
