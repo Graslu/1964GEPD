@@ -68,8 +68,6 @@ BEGIN
 
         END
         MENUITEM SEPARATOR
-        MENUITEM "NetPlay...",                  ID_KAILLERA_MODE
-        MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_EXIT
     END
     POPUP "Edit"
@@ -247,15 +245,6 @@ BEGIN
         MENUITEM "GE Firing Rate Hack",         ID_GEFIRINGHACK
         MENUITEM "PD Speed-Hack",               ID_PDSPEEDHACK
         MENUITEM "Boost Speed-Hack Freq",       ID_PDSPEEDHACKBOOST
-    END
-    POPUP "Net Play"
-    BEGIN
-        MENUITEM "Setting ...",                 ID_NETPLAY_CONFIG
-        MENUITEM "Add a Player ...",            ID_NETPLAY_ADDAREMOTEPLAYER
-        MENUITEM "Drop a Player ...",           ID_NETPLAY_DROPAREMOTEPLAYER
-        MENUITEM "Enable Net Play",             ID_NETPLAY_ENABLENETPLAY
-        , CHECKED
-        MENUITEM SEPARATOR
     END
     POPUP "&Help"
     BEGIN

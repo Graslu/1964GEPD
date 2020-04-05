@@ -28,7 +28,6 @@
 #include "win32/windebug.h"
 #include "debug_option.h"
 #include "memory.h"
-#include "kaillera/kaillera.h"
 #include "emulator.h"
 
 /* Global variabls */
@@ -345,7 +344,7 @@ void RomListOpenRom(int index, BOOL RunThisRom)
 			EnableMenuItem(gui.hMenu1964main, ID_FILE_CHEAT, MF_ENABLED);
 
 
-			if( RunThisRom || Kaillera_Is_Running == TRUE)
+			if( RunThisRom )
 			{
 				Play(emuoptions.auto_full_screen); /* autoplay */
 			}

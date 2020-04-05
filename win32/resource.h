@@ -138,7 +138,6 @@
 #define ID_FILE_SAVEINI                 235
 #define ID_SETBREAKPOINT                236
 #define ID_CLEAR_BREAKPOINT             237
-#define ID_KAILLERA_MODE                239
 #define ID_CF_CF1                       242
 #define ID_CF_CF2                       243
 #define ID_CF_CF3                       244
@@ -189,10 +188,6 @@
 #define ID_DEBUG_EXCEPTION_SERVICES     292
 #define ID_CPU_IMPORTPJ64STATE          293
 #define ID_CPU_EXPORTPJ64STATE          294
-#define ID_NETPLAY_CONFIG               295
-#define ID_NETPLAY_ADDAREMOTEPLAYER     296
-#define ID_NETPLAY_DROPAREMOTEPLAYER    297
-#define ID_NETPLAY_ENABLENETPLAY        298
 #define ID_POPUP_ROM_SETTING            299
 #define ID_POPUP_CHEATCODE              300
 #define ID_POPUP_LOADPLAY               301

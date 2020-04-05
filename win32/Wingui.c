@@ -45,8 +45,6 @@
 #include "../timer.h"
 #include "../romlist.h"
 #include "../cheatcode.h"
-#include "../kaillera/kaillera.h"
-#include "../netplay.h"
 
 #ifdef WINDEBUG_1964
 #include "windebug.h"
@@ -128,7 +126,6 @@ long					OnNotifyStatusBar(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 long					OnPopupMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 long					OnOpcodeDebuggerCommands(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 void					OnFreshRomList();
-void					DisableNetplayMemu();
 
 /*
  =======================================================================================================================
@@ -341,8 +338,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 	LoadString(hInstance, IDS_MAINDISCLAIMER, MainDisclaimer, sizeof(MainDisclaimer));
 
 	Set_1964_Directory();
-	LoadDllKaillera();
-	kailleraInit();
 	firstlaunch1964 = ReadConfiguration();	/* System registry settings */
 
 	gui.hwnd1964main = InitWin98UI(hInstance, nCmdShow);
@@ -356,14 +351,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 	SetupDebuger();
 	if(guioptions.highfreqtimer)
 		SetHighResolutionTimer();
-	/*	
-		Loading Netplay DLL, this must be done after loading the controller DLL because
-		netplay DLL will be using the controller DLL
-	*/
-	if( load_netplay_dll() == FALSE )
-	{
-		DisableNetplayMemu();
-	}
 
 #ifndef ENABLE_OPCODE_DEBUGGER
 	DeleteMenu(gui.hMenu1964main, ID_OPCODEDEBUGGER, MF_BYCOMMAND);
@@ -408,7 +395,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 	gui.hwndRomList = NewRomList_CreateListViewControl(gui.hwnd1964main);	/* this must be before the video plugin init */
 	SetStatusBarText(0, "Loading plugins");
 	LoadPlugins(LOAD_ALL_PLUGIN);
-	netplay_initialize_netplay(hinstControllerPlugin, Controls);
 
 	EnableRadioButtons(FALSE);
 
@@ -546,7 +532,6 @@ HWND InitWin98UI(HANDLE hInstance, int nCmdShow)
 	gui.hAccTable = LoadAccelerators(gui.hInst, (LPCTSTR) WINGUI_ACC);
 	gui.hMenu1964main = GetMenu(gui.hwnd1964main);
 
-	if(!IsKailleraDllLoaded()) EnableMenuItem(gui.hMenu1964main, ID_KAILLERA_MODE, MF_GRAYED);
 	SetOverclockFactor(emuoptions.OverclockFactor);
 	SetCounterFactor(defaultoptions.Counter_Factor);
 
@@ -588,9 +573,6 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case ID_CPU_KILL:
 			KillCPUThread();
-			break;
-		case ID_KAILLERA_MODE:
-			KailleraPlay();
 			break;
 		case ID_OPENROM:
 		case ID_BUTTON_OPEN_ROM:
@@ -991,18 +973,6 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case ID_CPU_EXPORTPJ64STATE:
 			if (!guistatus.IsFullScreen)
 			SaveStateByDialog(SAVE_STATE_PJ64_FORMAT);
-			break;
-		case ID_NETPLAY_CONFIG:
-			netplay_dll_config(hWnd, NETPLAY_OPTIONS);
-			break;
-		case ID_NETPLAY_ADDAREMOTEPLAYER:
-			netplay_dll_config(hWnd, NETPLAY_USER_MANAGEMENT);
-			break;
-		case ID_NETPLAY_DROPAREMOTEPLAYER:
-			netplay_dll_config(hWnd, NETPLAY_USER_MANAGEMENT);
-			break;
-		case ID_NETPLAY_ENABLENETPLAY:
-			netplay_dll_config(hWnd, NETPLAY_NETWORK_MANAGEMENT);
 			break;
 		case ID_POPUP_LOADPLAY:
 		case ID_POPUP_LOADPLAYINFULLSCREEN:
@@ -1449,7 +1419,6 @@ void KillCPUThread(void)
 		AUDIO_RomClosed();
 		CONTROLLER_RomClosed();
 		VIDEO_RomClosed();
-		netplay_rom_closed();
 
 		AfterStop();
 	}
@@ -1530,23 +1499,11 @@ void Play(BOOL WithFullScreen)
 		EnableMenuItem(gui.hMenu1964main, IDM_PLUGINS, MF_GRAYED);
 		EnableButton(ID_BUTTON_SETUP_PLUGINS, FALSE);
 
-		if(Kaillera_Is_Running == FALSE)
-		{
-			EnableMenuItem(gui.hMenu1964main, ID_ROM_PAUSE, MF_ENABLED);
-			EnableRadioButtons(TRUE);
-			CheckButton(ID_BUTTON_PLAY, TRUE);
-			EnableMenuItem(gui.hMenu1964main, ID_ROM_STOP, MF_ENABLED);
-			EnableStateMenu();
-		}
-		else
-		{
-			EnableMenuItem(gui.hMenu1964main, ID_FILE_CHEAT, MF_GRAYED);
-			EnableMenuItem(gui.hMenu1964main, ID_CLOSEROM, MF_GRAYED);
-			EnableRadioButtons(FALSE);
-			EnableMenuItem(gui.hMenu1964main, ID_ROM_PAUSE, MF_GRAYED);
-
-			/* EnableMenuItem(gui.hMenu1964main, ID_ROM_STOP, MF_GRAYED); */
-		}
+		EnableMenuItem(gui.hMenu1964main, ID_ROM_PAUSE, MF_ENABLED);
+		EnableRadioButtons(TRUE);
+		CheckButton(ID_BUTTON_PLAY, TRUE);
+		EnableMenuItem(gui.hMenu1964main, ID_ROM_STOP, MF_ENABLED);
+		EnableStateMenu();
 
 		if(GfxPluginVersion == 0x0103)
 		{
@@ -1588,12 +1545,6 @@ void Stop()
 {
 	if(emustatus.Emu_Is_Running)
 	{
-		if(Kaillera_Is_Running == TRUE)
-		{
-			Kaillera_Is_Running = FALSE;
-			kailleraEndGame();
-		}
-
 		StopEmulator();
 
 		if (emustatus.Emu_Is_Resetting == 0)
@@ -1614,75 +1565,6 @@ void Stop()
 	}
 }
 
-/*
- =======================================================================================================================
-    Kaillera Stuff £
- =======================================================================================================================
- */
-int WINAPI kailleraGameCallback(char *game, int player, int numplayers)
-{
-	/*~~*/
-	int i;
-	/*~~*/
-
-	Kaillera_Is_Running = TRUE;
-	Kaillera_Players = numplayers;
-	Kaillera_Counter = 0;
-
-	for(i = 0; i < romlist_count; i++)
-	{
-		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-		char			szRom[50];
-		ROMLIST_ENTRY	*entry = romlist[i];
-		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-		sprintf
-		(
-			szRom,
-			"%s (%X-%X:%c)",
-			entry->pinientry->Game_Name,
-			entry->pinientry->crc1,
-			entry->pinientry->crc2,
-			entry->pinientry->countrycode
-		);
-
-		if(strcmp(szRom, game) == 0)
-		{
-			RomListOpenRom(i, 1);
-		}
-	}
-
-	return 0;
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
-void WINAPI kailleraChatReceivedCallback(char *nick, char *text)
-{
-	/* Do what you want with this :) */
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
-void WINAPI kailleraClientDroppedCallback(char *nick, int playernb)
-{
-	/* Do what you want with this :) */
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
-void WINAPI kailleraMoreInfosCallback(char *gamename)
-{
-	/* Do what you want with this :) */
-}
-
-char	szKailleraNamedRoms[50 * MAX_ROMLIST];
 /*
  =======================================================================================================================
  =======================================================================================================================
@@ -1716,84 +1598,6 @@ void RomListGetGoodRomNameToDisplay(char *buf, int index)
 		}
 		break;
 	}
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
-
-void KailleraPlay(void)
-{
-	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-	int				i;
-	kailleraInfos	kInfos;
-	char			*pszKailleraNamedRoms = szKailleraNamedRoms;
-	int				saved_romlist_sort_method;
-	int				saved_romlistNameToDisplay;
-	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-	/* build roms list :) */
-	
-	saved_romlistNameToDisplay = romlistNameToDisplay;
-	romlistNameToDisplay = ROMLIST_DISPLAY_INTERNAL_NAME;
-	*pszKailleraNamedRoms = '\0';
-	
-	saved_romlist_sort_method = romlist_sort_method;
-	romlist_sort_method = ROMLIST_GAMENAME;
-	NewRomList_Sort();
-	romlist_sort_method = saved_romlist_sort_method;
-
-
-	for(i = 0; i < romlist_count; i++)
-	{
-		char			szRom[50];
-		char			szAlt[50];
-		ROMLIST_ENTRY	*entry = romlist[i];
-
-		RomListGetGoodRomNameToDisplay(szAlt, i);
-		if (szAlt[0] >= 'a' && szAlt[0] <= 'z') 
-			szAlt[0] -= 32;
-		szAlt[20] = '\0';
-
-		sprintf
-		(
-			szRom,
-			"%s (%X-%X:%c)",
-			szAlt,
-			entry->pinientry->crc1,
-			entry->pinientry->crc2,
-			entry->pinientry->countrycode
-		);
-
-		strncpy(pszKailleraNamedRoms, szRom, strlen(szRom) + 1);
-		pszKailleraNamedRoms += strlen(szRom) + 1;
-
-	}
-
-	romlistNameToDisplay = saved_romlistNameToDisplay;
-	*(++pszKailleraNamedRoms) = '\0';
-
-	kInfos.appName = CURRENT1964VERSION;
-	kInfos.gameList = szKailleraNamedRoms;
-	kInfos.gameCallback = kailleraGameCallback;
-	kInfos.chatReceivedCallback = kailleraChatReceivedCallback;
-	kInfos.clientDroppedCallback = kailleraClientDroppedCallback;
-	kInfos.moreInfosCallback = kailleraMoreInfosCallback;
-
-	// Lock some menu items 
-	EnableMenuItem(gui.hMenu1964main, ID_KAILLERA_MODE, MF_GRAYED);
-
-	kailleraInit();
-	kailleraSetInfos(&kInfos);
-	kailleraSelectServerDialog(gui.hwnd1964main);
-
-	// Stop emulator if running
-	Stop();
-
-	// Unlock menu items
-	EnableMenuItem(gui.hMenu1964main, ID_KAILLERA_MODE, (IsKailleraDllLoaded())? MF_ENABLED:MF_GRAYED);
-
 }
 
 /*
@@ -3352,7 +3156,6 @@ void PrepareBeforePlay(int IsFullScreen)
 	NewRomList_ListViewHideHeader(gui.hwndRomList);
 	ShowWindow(gui.hwndRomList, SW_HIDE);
 	EnableWindow(gui.hwndRomList, FALSE);
-	EnableMenuItem(gui.hMenu1964main, ID_KAILLERA_MODE, MF_GRAYED);
 	}
 
 	/* Setting options */
@@ -3472,7 +3275,6 @@ void AfterStop(void)
 	EnableButton(ID_BUTTON_SETUP_PLUGINS, TRUE);
 	EnableMenuItem(gui.hMenu1964main, ID_CLOSEROM, MF_ENABLED);
 	EnableMenuItem(gui.hMenu1964main, ID_ROM_PAUSE, MF_GRAYED);
-	EnableMenuItem(gui.hMenu1964main, ID_KAILLERA_MODE, (IsKailleraDllLoaded())? MF_ENABLED:MF_GRAYED);
 	EnableRadioButtons(FALSE);
 
 	/* EnableMenuItem(gui.hMenu1964main, ID_ROM_STOP, MF_GRAYED); */
@@ -4097,10 +3899,7 @@ void Exit1964(void)
 	DeleteAllIniEntries();	/* Release all ini entries */
 	ClearRomList();			/* Clean the Rom List */
 
-	unload_netplay_dll();
 	FreePlugins();
-
-	UnloadDllKaillera();
 
 	/*
 	 * Here is the fix for the problem that 1964 crash when exiting if using opengl
@@ -4155,26 +3954,6 @@ void DisableDebugMenu(void)
 	{
 		GetMenuString(gui.hMenu1964main, k, str, 80, MF_BYPOSITION);
 		if(strcmp(str, "Debug") == 0)
-		{
-			DeleteMenu(gui.hMenu1964main, k, MF_BYPOSITION);
-		}
-	}
-}
-
-/*
- *	Delete the netplay menu
- */
-void DisableNetplayMemu(void)
-{
-	int		i, k;
-	char	str[80];
-	/*~~~~~~~~~~~~*/
-
-	i = GetMenuItemCount(gui.hMenu1964main);
-	for(k = 0; k < i; k++)
-	{
-		GetMenuString(gui.hMenu1964main, k, str, 80, MF_BYPOSITION);
-		if(strcmp(str, "Net Play") == 0)
 		{
 			DeleteMenu(gui.hMenu1964main, k, MF_BYPOSITION);
 		}

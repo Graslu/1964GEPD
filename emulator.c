@@ -41,7 +41,6 @@
 #include "win32/wingui.h"
 #include "dynarec/dynaLog.h"
 #include "dynarec/dynarec.h"
-#include "netplay.h"
 #include "romlist.h"
 
 #ifdef DEBUG_COMMON
@@ -257,7 +256,6 @@ void StopEmulator(void)
 		{
 			RSPRomClosed();
 		}
-		netplay_rom_closed();
 	}
 }
 
@@ -376,7 +374,6 @@ void InitEmu(void)
 	{
 		VIDEO_RomOpen();
 		CONTROLLER_RomOpen();
-		netplay_rom_open();
 	}
 	else
 		emustatus.Emu_Is_Resetting = 0;
@@ -1197,7 +1194,6 @@ void Dyna_Exception_Service_Routine(uint32 vector)
 		{
 			AUDIO_RomClosed();
 			CONTROLLER_RomClosed();
-			netplay_rom_closed();
 
 			emustatus.Emu_Is_Running = FALSE;
 			CloseEmulator();

@@ -34,9 +34,7 @@
 #include "emulator.h"
 #include "win32/windebug.h"
 #include "win32/DLL_Input.h"
-#include "kaillera/Kaillera.h"
 #include "gamesave.h"
-#include "netplay.h"
 
 _u8 EEProm_Status_Byte = 0x00;
 
@@ -241,28 +239,13 @@ BOOL ControllerCommand(_u8 *cmd, int device)
 {
 	emustatus.ControllerReadCount++;
 
-	if(Kaillera_Is_Running == TRUE)
+	if(!Controls[device].Present)
 	{
-		// Need only the first device for kaillera mode cause this is the only device we really use ;)
-		if(!Controls[0].Present)
-		{
-			cmd[1] |= 0x80;
-			cmd[3] = 0xFF;
-			cmd[4] = 0xFF;
-			cmd[5] = 0xFF;
-			return TRUE;
-		}
-	}
-	else
-	{
-		if(!Controls[device].Present)
-		{
-			cmd[1] |= 0x80;
-			cmd[3] = 0xFF;
-			cmd[4] = 0xFF;
-			cmd[5] = 0xFF;
-			return TRUE;
-		}
+		cmd[1] |= 0x80;
+		cmd[3] = 0xFF;
+		cmd[4] = 0xFF;
+		cmd[5] = 0xFF;
+		return TRUE;
 	}
 
 	switch(cmd[2])
@@ -288,67 +271,7 @@ BOOL ControllerCommand(_u8 *cmd, int device)
 			BUTTONS Keys;
 			/*~~~~~~~~~*/
 
-			if(Kaillera_Is_Running)
-			{
-				/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-				typedef struct
-				{
-					unsigned int	c;
-					BUTTONS			b;
-				} kbuffer;
-				static kbuffer	kBuffers[8];
-				int				reclen;
-				int				internal_counter = 0;
-				/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-				CONTROLLER_GetKeys(0, &Keys);
-
-label_Jump:
-				if(internal_counter > 100)
-				{
-					MessageBox(NULL, "internal_counter reached !!!", "Error", 0);
-					Kaillera_Is_Running = FALSE;
-				}
-
-				memcpy(&kBuffers[0].b, &Keys, sizeof(BUTTONS));
-				kBuffers[0].c = Kaillera_Counter;
-				reclen = kailleraModifyPlayValues((void *) kBuffers, sizeof(kbuffer));
-
-				if(reclen == -1)
-				{
-					MessageBox(NULL, "Kaillera timeout", "Error", 0);
-					Kaillera_Is_Running = FALSE;
-				}
-				else if(reclen > 0)
-				{
-					int i;
-					for(i = 0; i < Kaillera_Players; i++)
-					{
-						if(kBuffers[i].c != Kaillera_Counter)	
-						{
-							/* This synchronizes all players */
-							/* but could make game play really slow */
-							goto label_Jump;
-						}
-					}
-				}
-				else
-					goto label_Jump;
-
-				Kaillera_Counter++;
-				internal_counter++;
-
-				memcpy(&Keys, &kBuffers[device].b, sizeof(BUTTONS));
-			}
-			else
-			{
-				if( NetplayInitialized )
-				{
-					netplay_get_keys(device, &Keys, emustatus.DListCount);
-				}
-				else
-					CONTROLLER_GetKeys(device, &Keys);
-			}
+			CONTROLLER_GetKeys(device, &Keys);
 
 			*(DWORD *) &cmd[3] = *(DWORD *) &Keys;
 			DEBUG_CONTROLLER_TRACE(TRACE2("Read controller %d, return %X", device, *(DWORD *) &Keys););
