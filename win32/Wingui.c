@@ -461,6 +461,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 			LoadPlugins(LOAD_VIDEO_PLUGIN);
 		}
 		ChangeDirectory();
+		MessageBox(gui.hwnd1964main, "TAB\t\t- Hide/Show Mouse Cursor\nF3\t\t- Pause emulation (toggle)\nF4\t\t- Stop emulation\nF5\t\t- Quicksave\nF7\t\t- Quickload\nLSHIFT+1..9\t- Select State\nALT+ENTER\t- Fullscreen toggle\n\nFull list of hotkeys are in BUNDLE_README.txt located in the 1964 directory.", "1964 Hotkeys", MB_ICONINFORMATION | MB_OK);
 	}
 
 
