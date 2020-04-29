@@ -1399,7 +1399,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,58,84,10
     CONTROL         "Start ROM in Full Screen",IDC_OPTION_AUTOFULLSCREEN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,70,94,10
-    CONTROL         "Hide Cursor on Launch",IDC_HIDEMOUSEONLAUNCH,
+    CONTROL         "Auto Hide Cursor",IDC_AUTOHIDEMOUSEWHENACTIVE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,82,111,10
     CONTROL         "Use Borderless Fullscreen",
                     IDC_OPTION_BORDERLESSFULLSCREEN,"Button",BS_AUTOCHECKBOX | 

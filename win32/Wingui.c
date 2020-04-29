@@ -461,7 +461,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 			LoadPlugins(LOAD_VIDEO_PLUGIN);
 		}
 		ChangeDirectory();
-		MessageBox(gui.hwnd1964main, "TAB\t\t- Hide/Show Mouse Cursor\nF3\t\t- Pause emulation (toggle)\nF4\t\t- Stop emulation\nF5\t\t- Quicksave\nF7\t\t- Quickload\nLSHIFT+1..9\t- Select State\nALT+ENTER\t- Fullscreen toggle\n\nFull list of hotkeys are in BUNDLE_README.txt located in the 1964 directory.", "1964 Hotkeys", MB_ICONINFORMATION | MB_OK);
+		MessageBox(gui.hwnd1964main, "F3\t\t- Pause emulation (toggle)\nF4\t\t- Stop emulation\nF5\t\t- Quicksave\nF7\t\t- Quickload\nLSHIFT+1..9\t- Select State\nALT+ENTER\t- Fullscreen toggle\n\nFull list of hotkeys are in BUNDLE_README.txt located in the 1964 directory.", "1964 Hotkeys", MB_ICONINFORMATION | MB_OK);
 	}
 
 
@@ -838,7 +838,7 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			CaptureScreenToFile();
 			break;
 		case ID_TOGGLECURSOR:
-			if(emustatus.Emu_Is_Running)
+			if(!guioptions.auto_hide_cursor_when_active && emustatus.Emu_Is_Running)
 				HideCursor(showcursor);
 			break;
 		case IDM_PLUGINS:
@@ -1186,6 +1186,7 @@ long FAR PASCAL MainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	static int			ok = 0;
 	static BOOL			gamepausebyinactive = FALSE;	/* static for this looks like a bad idea. */
 	static int			MenuCausedPause = FALSE;
+	static int			lastCursorCheckCounter = 0;
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	switch(message)
@@ -1217,6 +1218,18 @@ long FAR PASCAL MainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 					gamepausebyinactive = TRUE;
 				}
 			break;
+			}
+		}
+	break;
+
+	case WM_SETCURSOR:
+		if(guioptions.auto_hide_cursor_when_active && emustatus.Emu_Is_Running && !emustatus.Emu_Is_Paused)
+		{
+			lastCursorCheckCounter++;
+			if(lastCursorCheckCounter > 50)
+			{
+				HideCursor(HTCLIENT == LOWORD(lParam));
+				lastCursorCheckCounter = 0;
 			}
 		}
 	break;
@@ -2576,9 +2589,9 @@ LRESULT APIENTRY OptionsDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 		SendDlgItemMessage
 		(
 			hDlg,
-			IDC_HIDEMOUSEONLAUNCH,
+			IDC_AUTOHIDEMOUSEWHENACTIVE,
 			BM_SETCHECK,
-			guioptions.hide_cursor_on_launch ? BST_CHECKED : BST_UNCHECKED,
+			guioptions.auto_hide_cursor_when_active ? BST_CHECKED : BST_UNCHECKED,
 			0
 		);
 		SendDlgItemMessage
@@ -2654,7 +2667,7 @@ LRESULT APIENTRY OptionsDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 				guioptions.pause_at_menu = (SendDlgItemMessage(hDlg, IDC_DEFAULTOPTIOS_PAUSEONMENU, BM_GETCHECK, 0, 0) == BST_CHECKED);
 				guioptions.pause_at_inactive = (SendDlgItemMessage(hDlg, IDC_DEFAULTOPTIONS_PAUSEWHENINACTIVE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 				guioptions.borderless_fullscreen = (SendDlgItemMessage(hDlg, IDC_OPTION_BORDERLESSFULLSCREEN, BM_GETCHECK, 0, 0) == BST_CHECKED);
-				guioptions.hide_cursor_on_launch = (SendDlgItemMessage(hDlg, IDC_HIDEMOUSEONLAUNCH, BM_GETCHECK, 0, 0) == BST_CHECKED);
+				guioptions.auto_hide_cursor_when_active = (SendDlgItemMessage(hDlg, IDC_AUTOHIDEMOUSEWHENACTIVE, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 				if
 				(
@@ -3164,7 +3177,7 @@ void PrepareBeforePlay(int IsFullScreen)
 	GenerateCurrentRomOptions();
 
 	/* Hide cursor */
-	if(guioptions.hide_cursor_on_launch)
+	if(guioptions.auto_hide_cursor_when_active)
 		HideCursor(TRUE);
 
 	if(rominfo.TV_System == TV_SYSTEM_NTSC) // if USA ROM
