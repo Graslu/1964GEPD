@@ -541,7 +541,8 @@ HWND InitWin98UI(HANDLE hInstance, int nCmdShow)
 
 void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	int PlayButtonState; //For pause/Play	
+	int PlayButtonState; //For pause/Play
+	BOOL wasRunning = emustatus.Emu_Is_Running; // flag to resume emulating after closing plugin dialog
 	
 	if(guistatus.block_menu)
 			return; /* ok, all menu commands are blocked */
@@ -663,12 +664,14 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if (!guistatus.IsFullScreen)
 			if(emustatus.Emu_Is_Running)
 			{
-				PauseEmulator();
+				if(!emustatus.Emu_Is_Paused)
+					PauseEmulator();
 				//SuspendThread(CPUThreadHandle);
 				HideCursor(FALSE);
 				DialogBox(gui.hInst, "CHEAT_HACK", hWnd, (DLGPROC) CheatAndHackDialog);
 				//ResumeThread(CPUThreadHandle);
-				ResumeEmulator(DO_NOTHING_AFTER_PAUSE);
+				if(wasRunning)
+					ResumeEmulator(DO_NOTHING_AFTER_PAUSE);
 			}
 			else
 			{
@@ -701,11 +704,15 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				if(emustatus.Emu_Is_Running)
 				{
+					if(!emustatus.Emu_Is_Paused)
+						PauseEmulator();
 					/* SuspendThread(CPUThreadHandle); */
 					HideCursor(FALSE);
 					VIDEO_DllConfig(hWnd);
 
 					/* ResumeThread(CPUThreadHandle); */
+					if(wasRunning)
+						ResumeEmulator(DO_NOTHING_AFTER_PAUSE);
 				}
 				else
 				{
@@ -721,10 +728,14 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if (!guistatus.IsFullScreen)
 			if(emustatus.Emu_Is_Running)
 			{
+				if(!emustatus.Emu_Is_Paused)
+					PauseEmulator();
 				SuspendThread(CPUThreadHandle);
 				HideCursor(FALSE);
 				AUDIO_DllConfig(hWnd);
 				ResumeThread(CPUThreadHandle);
+				if(wasRunning)
+					ResumeEmulator(DO_NOTHING_AFTER_PAUSE);
 			}
 			else
 			{
@@ -736,10 +747,14 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if (!guistatus.IsFullScreen)
 			if(emustatus.Emu_Is_Running)
 			{
+				if(!emustatus.Emu_Is_Paused)
+					PauseEmulator();
 				/* SuspendThread(CPUThreadHandle); */
 				HideCursor(FALSE);
 				CONTROLLER_DllConfig(hWnd);
 				/* ResumeThread(CPUThreadHandle); */
+				if(wasRunning)
+					ResumeEmulator(DO_NOTHING_AFTER_PAUSE);
 			}
 			else
 			{
@@ -749,7 +764,13 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case ID_RSP_CONFIG:
 			if (!guistatus.IsFullScreen)
-			RSPDllConfig(hWnd);
+			{
+				if(emustatus.Emu_Is_Running && !emustatus.Emu_Is_Paused)
+					PauseEmulator();
+				RSPDllConfig(hWnd);
+				if(wasRunning)
+					ResumeEmulator(DO_NOTHING_AFTER_PAUSE);
+			}
 			break;
 		case ID_INTERPRETER:
 			CheckMenuItem(gui.hMenu1964main, ID_INTERPRETER, MF_CHECKED);
