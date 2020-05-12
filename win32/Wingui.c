@@ -542,7 +542,7 @@ HWND InitWin98UI(HANDLE hInstance, int nCmdShow)
 void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int PlayButtonState; //For pause/Play
-	BOOL wasRunning = emustatus.Emu_Is_Running; // flag to resume emulating after closing plugin dialog
+	BOOL wasRunning = !emustatus.Emu_Is_Paused; // flag to resume emulating after closing plugin dialog
 	
 	if(guistatus.block_menu)
 			return; /* ok, all menu commands are blocked */
