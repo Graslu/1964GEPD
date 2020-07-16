@@ -255,19 +255,13 @@ void Interrupts(uint32 JumpType, uint32 targetpc, uint32 DoLink, uint32 LinkVal)
 
 	if(JumpType == JUMP_TYPE_INDIRECT)
 	{
-		if(emuoptions.OverclockFactor == 1)
-			SUB_ImmToMemory((_u32) & countdown_counter, viCounter);
-		else
-			ADD_ImmToMemory((_u32) & countdown_counter, viCounter);
+		SUB_ImmToMemory((_u32) & countdown_counter, viCounter);
 		TLB_TRANSLATE_PC_INDIRECT();
 		RET();
 	}
 	else if(currentromoptions.Link_4KB_Blocks != USE4KBLINKBLOCK_YES)
 	{
-		if(emuoptions.OverclockFactor == 1)
-			SUB_ImmToMemory((_u32) & countdown_counter, viCounter);
-		else
-			ADD_ImmToMemory((_u32) & countdown_counter, viCounter);
+		SUB_ImmToMemory((_u32) & countdown_counter, viCounter);
 		MOV_ImmToMemory(1, ModRM_disp32, (unsigned long) &gHWS_pc, targetpc);
 		TLB_TRANSLATE_PC(targetpc);
 		RET();
@@ -361,8 +355,7 @@ void dyna4300i_bne(OP_PARAMS)
 	CHECK_OPCODE_PASS if(gMultiPass.WhichPass == COMPILE_OPCODES_ONLY) MessageBox(NULL, "Bad", 0, 0);
 	SetRdRsRt64bit(PASS_PARAMS);
 
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	_OPCODE_DEBUG_BRANCH_(r4300i_bne);
 
 	aValue = (reg->pc + 4 + (__I << 2));
@@ -465,8 +458,7 @@ void dyna4300i_beq(OP_PARAMS)
 
 	_OPCODE_DEBUG_BRANCH_(r4300i_beq);
 
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+    compilerstatus.cp0Counter += 1;
 
 	aValue = (reg->pc + 4 + (__I << 2));
 
@@ -566,8 +558,7 @@ void dyna4300i_beql(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
     SetRdRsRt64bit(PASS_PARAMS);
 
 	_OPCODE_DEBUG_BRANCH_(r4300i_beql);
@@ -680,8 +671,7 @@ void dyna4300i_bnel(OP_PARAMS)
 	CHECK_OPCODE_PASS;
 	if(gMultiPass.WhichPass == COMPILE_OPCODES_ONLY) MessageBox(NULL, "Bad", 0, 0);
 
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	SetRdRsRt64bit(PASS_PARAMS);
 	_OPCODE_DEBUG_BRANCH_(r4300i_bnel);
 
@@ -789,8 +779,7 @@ void dyna4300i_blez(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	SetRdRsRt64bit(PASS_PARAMS);
 	_OPCODE_DEBUG_BRANCH_(r4300i_blez);
 
@@ -926,8 +915,7 @@ void dyna4300i_blezl(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	_OPCODE_DEBUG_BRANCH_(r4300i_blezl);
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+    compilerstatus.cp0Counter += 1;
 
 	tempRSIs32bit = CheckIs32Bit(xRS->mips_reg);
 	tempRTIs32bit = CheckIs32Bit(xRT->mips_reg);
@@ -1044,8 +1032,7 @@ void dyna4300i_bgtz(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	SetRdRsRt64bit(PASS_PARAMS);
 	_OPCODE_DEBUG_BRANCH_(r4300i_bgtz);
 
@@ -1166,8 +1153,7 @@ void dyna4300i_bgtzl(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	SetRdRsRt64bit(PASS_PARAMS);
 	_OPCODE_DEBUG_BRANCH_(r4300i_bgtzl);
 
@@ -1272,8 +1258,7 @@ void dyna4300i_regimm_bltz(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	SetRdRsRt64bit(PASS_PARAMS);
 	_OPCODE_DEBUG_BRANCH_(r4300i_bltz);
 
@@ -1355,8 +1340,7 @@ void dyna4300i_regimm_bltzl(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	SetRdRsRt64bit(PASS_PARAMS);
 	_OPCODE_DEBUG_BRANCH_(r4300i_bltzl);
 
@@ -1422,8 +1406,7 @@ void dyna4300i_regimm_bgez(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	SetRdRsRt64bit(PASS_PARAMS);
 	_OPCODE_DEBUG_BRANCH_(r4300i_bgez);
 
@@ -1544,8 +1527,7 @@ void dyna4300i_regimm_bgezl(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	SetRdRsRt64bit(PASS_PARAMS);
 	_OPCODE_DEBUG_BRANCH_(r4300i_bgezl);
 
@@ -1664,8 +1646,7 @@ void dyna4300i_regimm_bgezal(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	SetRdRsRt64bit(PASS_PARAMS);
 	_OPCODE_DEBUG_BRANCH_(r4300i_bgezal);
 
@@ -1741,8 +1722,7 @@ void dyna4300i_regimm_bgezall(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	SetRdRsRt64bit(PASS_PARAMS);
 	_OPCODE_DEBUG_BRANCH_(r4300i_bgezall);
 
@@ -1799,8 +1779,7 @@ void dyna4300i_regimm_bltzal(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	SetRdRsRt64bit(PASS_PARAMS);
 	_OPCODE_DEBUG_BRANCH_(r4300i_bltzal);
 
@@ -1831,8 +1810,7 @@ void dyna4300i_regimm_bltzall(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	SetRdRsRt64bit(PASS_PARAMS);
 	_OPCODE_DEBUG_BRANCH_(r4300i_bltzall);
 
@@ -1883,8 +1861,7 @@ void dyna4300i_jal(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	_OPCODE_DEBUG_BRANCH_(r4300i_jal) aValue = ((reg->pc & 0xf0000000) | (____T << 2));
 
 	reg->pc += 4;
@@ -1915,8 +1892,7 @@ void dyna4300i_j(OP_PARAMS)
 	/*~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	_OPCODE_DEBUG_BRANCH_(r4300i_j);
 
 	aValue = ((reg->pc & 0xf0000000) | (____T << 2));
@@ -1938,8 +1914,7 @@ void dyna4300i_j(OP_PARAMS)
 void dyna4300i_special_jr(OP_PARAMS)
 {
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	_OPCODE_DEBUG_BRANCH_(r4300i_jr) FlushAllRegisters();
 	LoadLowMipsCpuRegister(__RS, Reg_EAX);
 	MOV_EAXToMemory(1, (unsigned long) &reg->pc);
@@ -1965,8 +1940,7 @@ void dyna4300i_cop1_bc1f(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	_OPCODE_DEBUG_BRANCH_(r4300i_COP1_bc1f);
 	aValue = (reg->pc + 4 + (__I << 2));
 
@@ -1998,8 +1972,7 @@ void dyna4300i_cop1_bc1fl(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	_OPCODE_DEBUG_BRANCH_(r4300i_COP1_bc1fl);
 	aValue = (reg->pc + 4 + (__I << 2));
 
@@ -2031,8 +2004,7 @@ void dyna4300i_cop1_bc1t(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	_OPCODE_DEBUG_BRANCH_(r4300i_COP1_bc1t);
 	aValue = (reg->pc + 4 + (__I << 2));
 
@@ -2064,8 +2036,7 @@ void dyna4300i_cop1_bc1tl(OP_PARAMS)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	_OPCODE_DEBUG_BRANCH_(r4300i_COP1_bc1tl);
 	aValue = (reg->pc + 4 + (__I << 2));
 
@@ -2096,8 +2067,7 @@ void dyna4300i_special_jalr(OP_PARAMS)
 	/*~~~~~~~~~~~*/
 
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	_OPCODE_DEBUG_BRANCH_(r4300i_jalr)
 #ifdef DEBUG_COMMON
 	if(__RD == __RS)
@@ -2141,8 +2111,7 @@ void dyna4300i_special_jalr(OP_PARAMS)
 void dyna4300i_cop0_eret(OP_PARAMS)
 {
 	CHECK_OPCODE_PASS;
-	if(emuoptions.OverclockFactor == 1)
-		compilerstatus.cp0Counter += 1;
+	compilerstatus.cp0Counter += 1;
 	_OPCODE_DEBUG_BRANCH_(r4300i_COP0_eret) /* questionable. */
 
 	FlushAllRegisters();

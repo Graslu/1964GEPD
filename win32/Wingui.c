@@ -2960,7 +2960,8 @@ void SetCounterFactor(int factor)
 #define GE_menupage 0x8002A8C0 // menu page id, used to check if it is safe to inject the firing rate patch
 #define PD_tickrate 0x80099FC0 // game loop's tickrate (used to detect when PD is running at lower framerate - PD was designed to halve game tickrate when detected bottlenecks)
 #define PD_timer 0x80099FE8 // we intentionally screw with this timer address to force PD to run at unlocked speed
-#define PD_mpspeed 0x800ACB91 // used to check if the match is set to slow motion or normal speed
+#define PD_mpisactive 0x8009A2D4 // flag set to 1 if mp mode is active
+#define PD_mpspeed 0x800ACB94 // used to check if the match is set to slow motion or normal speed
 #define PD_masterclock 0x8038CECC // location of master clock code (TLB'd to 7F)
 #define PD_newcodearea 0x803C78E0 // free area to write new timing code for 60fps mode
 #define PD_newcodearealastcode 0x803C7964 // used to check if memory is safe to write
@@ -2992,7 +2993,9 @@ void PDTimingHack(void)
 void PDSpeedHack(void)
 {
 	int bruteforce;
-	if(LOAD_SWORD_PARAM(PD_tickrate) == 2 && (LOAD_UWORD_PARAM(PD_mpspeed) & 0x80) != 0x80) // if PD is running at 30fps and mp slow motion setting is not set to smart
+	if(LOAD_UWORD_PARAM(PD_mpisactive) && (LOAD_UWORD_PARAM(PD_mpspeed) & 0x80) == 0x80) // if mp is active and slow motion setting is set to smart, don't set to 60fps
+		return;
+	if(LOAD_SWORD_PARAM(PD_tickrate) == 2) // if PD is running at 30fps
 	{
 		for(bruteforce = 0; bruteforce < (emuoptions.PDSpeedHackBoost ? 48 : 24); bruteforce++)
 			LOAD_UWORD_PARAM(PD_timer) = 0x00000000; // trick the system into thinking there is plenty of room left to run at full speed
