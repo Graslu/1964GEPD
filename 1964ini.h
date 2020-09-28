@@ -90,32 +90,32 @@ enum USEHLE { USEHLE_DEFAULT, USEHLE_YES, USEHLE_NO };
 
 struct INI_ENTRY_STRUCT
 {
-	char				Game_Name[40];
-	char				Comments[80];
-	char				Alt_Title[51];
 	uint32				crc1;
 	uint32				crc2;
-	uint8				countrycode;
-	int					RDRAM_Size;
 	enum EMULATORTYPE	Emulator;
 	enum GAMESAVETYPE	Save_Type;
 	enum CODECHECKTYPE	Code_Check;
-	int					Max_FPS;
-	int					Use_TLB;
-	int					Eeprom_size;
-	int					Counter_Factor;
-	int					Use_Register_Caching;
-	int					FPU_Hack;
-	int					DMA_Segmentation;
-	int					Link_4KB_Blocks;
-	int					Advanced_Block_Analysis;
-	int					Assume_32bit;
-	int					Use_HLE;
+	char				Game_Name[40];
+	char				Comments[80];
+	char				Alt_Title[51];
+	uint8				countrycode;
+	uint8				RDRAM_Size;
+	uint8				Max_FPS;
+	uint8				Use_TLB;
+	uint8				Eeprom_size;
+	uint8				Counter_Factor;
+	uint8				Use_Register_Caching;
+	uint8				FPU_Hack;
+	uint8				DMA_Segmentation;
+	uint8				Link_4KB_Blocks;
+	uint8				Advanced_Block_Analysis;
+	uint8				Assume_32bit;
+	uint8				Use_HLE;
 };
 typedef struct INI_ENTRY_STRUCT INI_ENTRY;
 
-/* Support update to 3000 entries, should be enough for all the N64 Games */
-#define MAX_INI_ENTRIES 3000
+/* Support update to 50000 entries, should be enough for all the N64 Games + hacks */
+#define MAX_INI_ENTRIES 50000
 
 /* Globals definition */
 char				*rdram_size_names[];

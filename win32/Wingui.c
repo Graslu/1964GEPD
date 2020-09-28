@@ -2456,9 +2456,9 @@ LRESULT APIENTRY DefaultOptionsDialog(HWND hDlg, unsigned message, WORD wParam, 
 					SetStatusBarText(3, defaultoptions.RDRAM_Size == RDRAMSIZE_4MB ? "4MB" : "8MB");
 				defaultoptions.Save_Type = SendDlgItemMessage(hDlg, IDC_DEFAULTOPTIONS_SAVETYPE, CB_GETCURSEL, 0, 0) + 1;
 				defaultoptions.Code_Check = SendDlgItemMessage(hDlg, IDC_DEFAULTOPTIONS_CODECHECK, CB_GETCURSEL, 0, 0) + 1;
-				defaultoptions.Max_FPS = SendDlgItemMessage(hDlg, IDC_DEFAULTOPTIONS_MAXVISPEED, CB_GETCURSEL, 0, 0) + 1;
+				defaultoptions.Max_FPS = (uint8)SendDlgItemMessage(hDlg, IDC_DEFAULTOPTIONS_MAXVISPEED, CB_GETCURSEL, 0, 0) + 1;
 				defaultoptions.Use_TLB = 2 - (SendDlgItemMessage(hDlg, IDC_DEFAULTOPTIONS_USETLB, BM_GETCHECK, 0, 0) == BST_CHECKED);
-				defaultoptions.Eeprom_size = SendDlgItemMessage
+				defaultoptions.Eeprom_size = (uint8)SendDlgItemMessage
 						(
 							hDlg,
 							IDC_DEFAULTOPTIONS_EEPROMSIZE,

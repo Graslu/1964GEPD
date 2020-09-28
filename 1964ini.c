@@ -70,9 +70,9 @@ char		user_set_plugin_directory[_MAX_PATH];
 float		vips_speed_limits[] = { 500.0f, 500.0f, 60.0f, 50.0f, 60.0f };
 int			ini_entry_count = 0;
 
-INI_ENTRY	*ini_entries[MAX_INI_ENTRIES];	/* The array of ini entries. Array is sorted by Game Name */
-INI_ENTRY	defaultoptions;					/* 1964 default options */
-INI_ENTRY	currentromoptions;				/* option setting for the current ROM, options are generates */
+INI_ENTRY	*ini_entries[MAX_INI_ENTRIES] = {NULL};	/* The array of ini entries. Array is sorted by Game Name */
+INI_ENTRY	defaultoptions;							/* 1964 default options */
+INI_ENTRY	currentromoptions;						/* option setting for the current ROM, options are generates */
 
 /*
  =======================================================================================================================

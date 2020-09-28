@@ -597,7 +597,7 @@ LRESULT APIENTRY RomListDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 		case IDOK:
 			{
 				/* Read option setting from dialog */
-				romlist[selected_rom_index]->pinientry->RDRAM_Size = SendDlgItemMessage
+				romlist[selected_rom_index]->pinientry->RDRAM_Size = (uint8)SendDlgItemMessage
 					(
 						hDlg,
 						IDC_ROMOPTION_RDRAMSIZE,
@@ -605,7 +605,7 @@ LRESULT APIENTRY RomListDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 						0,
 						0
 					) + 1;
-				romlist[selected_rom_index]->pinientry->Save_Type = SendDlgItemMessage
+				romlist[selected_rom_index]->pinientry->Save_Type = (uint8)SendDlgItemMessage
 					(
 						hDlg,
 						IDC_ROMOPTION_SAVETYPE,
@@ -629,7 +629,7 @@ LRESULT APIENTRY RomListDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 						0,
 						0
 					) + 1;
-				romlist[selected_rom_index]->pinientry->Max_FPS = SendDlgItemMessage
+				romlist[selected_rom_index]->pinientry->Max_FPS = (uint8)SendDlgItemMessage
 					(
 						hDlg,
 						IDC_ROMOPTION_MAXVISPEED,
@@ -637,7 +637,7 @@ LRESULT APIENTRY RomListDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 						0,
 						0
 					) + 1;
-				romlist[selected_rom_index]->pinientry->Use_TLB = SendDlgItemMessage
+				romlist[selected_rom_index]->pinientry->Use_TLB = (uint8)SendDlgItemMessage
 					(
 						hDlg,
 						IDC_ROMOPTION_USETLB,
@@ -645,7 +645,7 @@ LRESULT APIENTRY RomListDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 						0,
 						0
 					) + 1;
-				romlist[selected_rom_index]->pinientry->Eeprom_size = SendDlgItemMessage
+				romlist[selected_rom_index]->pinientry->Eeprom_size = (uint8)SendDlgItemMessage
 					(
 						hDlg,
 						IDC_ROMOPTION_EEPROMSIZE,
@@ -653,7 +653,7 @@ LRESULT APIENTRY RomListDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 						0,
 						0
 					) + 1;
-				romlist[selected_rom_index]->pinientry->Use_Register_Caching = SendDlgItemMessage
+				romlist[selected_rom_index]->pinientry->Use_Register_Caching = (uint8)SendDlgItemMessage
 					(
 						hDlg,
 						IDC_ROMOPTION_USEREGC,
@@ -661,7 +661,7 @@ LRESULT APIENTRY RomListDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 						0,
 						0
 					) + 1;
-				romlist[selected_rom_index]->pinientry->Counter_Factor = SendDlgItemMessage
+				romlist[selected_rom_index]->pinientry->Counter_Factor = (uint8)SendDlgItemMessage
 					(
 						hDlg,
 						IDC_ROMOPTION_CF,
@@ -669,7 +669,7 @@ LRESULT APIENTRY RomListDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 						0,
 						0
 					) + 1;
-				romlist[selected_rom_index]->pinientry->FPU_Hack = SendDlgItemMessage
+				romlist[selected_rom_index]->pinientry->FPU_Hack = (uint8)SendDlgItemMessage
 					(
 						hDlg,
 						IDC_ROMOPTION_FPUHACK,
@@ -677,7 +677,7 @@ LRESULT APIENTRY RomListDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 						0,
 						0
 					) + 1;
-				romlist[selected_rom_index]->pinientry->DMA_Segmentation = SendDlgItemMessage
+				romlist[selected_rom_index]->pinientry->DMA_Segmentation = (uint8)SendDlgItemMessage
 					(
 						hDlg,
 						IDC_ROMOPTION_DMASEG,
@@ -685,7 +685,7 @@ LRESULT APIENTRY RomListDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 						0,
 						0
 					) + 1;
-				romlist[selected_rom_index]->pinientry->Link_4KB_Blocks = SendDlgItemMessage
+				romlist[selected_rom_index]->pinientry->Link_4KB_Blocks = (uint8)SendDlgItemMessage
 					(
 						hDlg,
 						IDC_ROMOPTION_LINK4KB,
@@ -693,7 +693,7 @@ LRESULT APIENTRY RomListDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 						0,
 						0
 					) + 1;
-				romlist[selected_rom_index]->pinientry->Advanced_Block_Analysis = SendDlgItemMessage
+				romlist[selected_rom_index]->pinientry->Advanced_Block_Analysis = (uint8)SendDlgItemMessage
 					(
 						hDlg,
 						IDC_ROMOPTION_ANALYSIS,
@@ -701,7 +701,7 @@ LRESULT APIENTRY RomListDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 						0,
 						0
 					) + 1;
-				romlist[selected_rom_index]->pinientry->Assume_32bit = SendDlgItemMessage
+				romlist[selected_rom_index]->pinientry->Assume_32bit = (uint8)SendDlgItemMessage
 					(
 						hDlg,
 						IDC_ROMOPTION_ASSUME_32BIT,
@@ -709,7 +709,7 @@ LRESULT APIENTRY RomListDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 						0,
 						0
 					) + 1;
-				romlist[selected_rom_index]->pinientry->Use_HLE = SendDlgItemMessage
+				romlist[selected_rom_index]->pinientry->Use_HLE = (uint8)SendDlgItemMessage
 					(
 						hDlg,
 						IDC_ROMOPTION_HLE,
