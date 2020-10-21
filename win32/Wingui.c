@@ -461,7 +461,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 			LoadPlugins(LOAD_VIDEO_PLUGIN);
 		}
 		ChangeDirectory();
-		MessageBox(gui.hwnd1964main, "F3\t\t- Pause emulation (toggle)\nF4\t\t- Stop emulation\nF5\t\t- Quicksave\nF7\t\t- Quickload\nLSHIFT+1..9\t- Select State\nALT+ENTER\t- Fullscreen toggle\n\nFull list of hotkeys are in BUNDLE_README.txt located in the 1964 directory.", "1964 Hotkeys", MB_ICONINFORMATION | MB_OK);
+		MessageBox(gui.hwnd1964main, "4\t\t- Toggle mouse injector\nF3\t\t- Pause emulation (toggle)\nF4\t\t- Stop emulation\nF5\t\t- Quicksave\nF7\t\t- Quickload\nLSHIFT+1..9\t- Select State\nALT+ENTER\t- Fullscreen toggle\n\nFull list of hotkeys are in BUNDLE_README.txt located in the 1964 directory.", "1964 Hotkeys", MB_ICONINFORMATION | MB_OK);
 	}
 
 
@@ -933,7 +933,7 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, MF_CHECKED);
 				emuoptions.PDSpeedHackBoost = TRUE;
 				if (!guistatus.IsFullScreen)
-					MessageBox(gui.hwnd1964main, "The PD Speed-Hack can be unstable when injected too quickly.\nIf you experience clock skips or instant deaths with PD, turn off\nBoost Speed-Hack Freq.", "Information", MB_ICONINFORMATION | MB_OK);
+					MessageBox(gui.hwnd1964main, "Perfect Dark's Speed-Hack can be unstable when injected too quickly.\n\nIf you experience clock skips or instant deaths, turn off Boost.", "Information", MB_ICONINFORMATION | MB_OK);
 			}
 			break;
 		case ID_ABOUT_WARRANTY:
