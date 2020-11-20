@@ -676,6 +676,31 @@ char	temp_video_plugin[256];
 char	temp_audio_plugin[256];
 char	temp_input_plugin[256];
 
+const char simplified_plugin_names[][2][100] =
+{
+	// video plugins
+	{{"Highest: GLideN64 (New)"},			{"GLideN64 rev.0a5216f8"}},
+	{{"High: GLideN64 (Old)"},				{"GLideN64 Release V2 (Old)"}},
+	{{"Medium: Glide64 (Final)"},			{"Glide64 'Final' Date: May  8 2012"}},
+	{{"Low: Jabo (1.6.1)"},					{"Jabo's Direct3D8 1.6.1"}},
+	{{"Lowest: Jabo (1.5.2)"},				{"Jabo's Direct3D6 1.5.2"}},
+	{{"Developer: SoftGraphic"},			{"Shunyuan's SoftGraphic 1.5.0"}},
+
+	// audio plugins
+	{{"Default Audio"},						{"Azimer's HLE Audio v0.56 WIP 2"}},
+	{{"Less Delay #1 (May Stutter)"},		{"Azimer's HLE Audio v0.60 WIP 2"}},
+	{{"Less Delay #2 (May Stutter)"},		{"Azimer's HLE Audio v0.55.1 Alpha"}},
+
+	// input plugins
+	{{"Mouse Injector (Speedrun Build)"},	{" (Speedrun Build)"}},
+	{{"Mouse Injector"},					{"Mouse Injector for GE/PD"}},
+	{{"Controller (N-Rage 2.3c)"},			{"N-Rage Input Plugin V2 2.3c"}},
+	{{"Controller (N-Rage 2.2)"},			{"N-Rage's Direct-Input8 V2 2.2 beta"}},
+	{{"Controller (DirectInput)"},			{"Shunyuan's DirectInput 1.2.0"}},
+
+	{{'\0'}, {'\0'}} // end of list
+};
+
 /*
  =======================================================================================================================
  =======================================================================================================================
@@ -745,6 +770,20 @@ LRESULT APIENTRY PluginsDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 					goto skipdll;
 				};
 
+				if(guioptions.use_simplified_plugin_names) // replace plugin name with simplified names from list
+				{
+					for(index = 0; index < 256; index++)
+					{
+						if(simplified_plugin_names[index][0][0] == '\0') // reached end of list
+							break;
+						if(strstr(Plugin_Info.Name, simplified_plugin_names[index][1]) != NULL)
+						{
+							strcpy(Plugin_Info.Name, simplified_plugin_names[index][0]);
+							break;
+						}
+					}
+				}
+
 				switch(Plugin_Info.Type)
 				{
 				case PLUGIN_TYPE_GFX:
@@ -788,7 +827,9 @@ skipdll:
 		rsp_checkbox = GetDlgItem(hDlg, IDC_USE_RSP_PLUGIN);
 		if( FoundRSPDll == TRUE )
 		{
-			EnableWindow(rsp_checkbox, TRUE);
+			EnableWindow(rsp_checkbox, guioptions.use_simplified_plugin_names == FALSE ? TRUE : FALSE);
+			ShowWindow(rsp_checkbox, guioptions.use_simplified_plugin_names == FALSE ? TRUE : FALSE);
+			ShowWindow(GetDlgItem(hDlg, IDC_SHOW_RSP_GROUP_BOX), guioptions.use_simplified_plugin_names == FALSE ? TRUE : FALSE);
 			if( emuoptions.UsingRspPlugin == TRUE )
 			{
 				SendMessage(rsp_checkbox, BM_SETCHECK, (WPARAM)TRUE, (LPARAM)NULL);
@@ -803,6 +844,7 @@ skipdll:
 			SendMessage(rsp_checkbox, BM_SETCHECK, (WPARAM)FALSE, (LPARAM)NULL);
 			EnableWindow(rsp_checkbox, FALSE);
 		}
+		SendDlgItemMessage(hDlg, IDC_USE_SIMPLIFIED_NAMES, BM_SETCHECK, guioptions.use_simplified_plugin_names ? BST_CHECKED : BST_UNCHECKED, (LPARAM)NULL);
 
 		return(TRUE);
 
@@ -820,6 +862,7 @@ skipdll:
 					EndDialog(hDlg, TRUE);
 
 					emuoptions.UsingRspPlugin = SendDlgItemMessage(hDlg, IDC_USE_RSP_PLUGIN, BM_GETCHECK, (WPARAM)NULL, (LPARAM)NULL);
+					guioptions.use_simplified_plugin_names = SendDlgItemMessage(hDlg, IDC_USE_SIMPLIFIED_NAMES, BM_GETCHECK, (WPARAM)NULL, (LPARAM)NULL);
 
 					if(strcmp(gRegSettings.VideoPlugin, temp_video_plugin) != 0)
 					{
@@ -877,6 +920,10 @@ skipdll:
 				break;
 			case IDC_AUD_TEST:
 				AUDIO_Under_Selecting_Test(hDlg);
+				break;
+
+			case IDC_USE_SIMPLIFIED_NAMES:
+				MessageBox(hDlg, "Reopen plugin config dialog to update plugin names.", "Information", MB_OK | MB_ICONINFORMATION | MB_SYSTEMMODAL);
 				break;
 			}
 

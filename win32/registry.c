@@ -144,6 +144,7 @@ int ReadConfiguration(void)
 	guioptions.highfreqtimer = INI_OptionReadUInt("HighFreqTimer");
 	guioptions.borderless_fullscreen = INI_OptionReadUInt("BorderlessFullscreen");
 	guioptions.auto_hide_cursor_when_active = INI_OptionReadUInt("AutoHideCursorWhenActive");
+	guioptions.use_simplified_plugin_names = INI_OptionReadUInt("UseSimplifiedPluginNames");
 	romlist_sort_method = INI_OptionReadUInt("SortRomList");
 	romlistNameToDisplay = INI_OptionReadUInt("RomNameToDisplay");
 
@@ -386,6 +387,8 @@ void WriteConfiguration(void)
 
 		INI_OptionWriteUInt("AutoHideCursorWhenActive", guioptions.auto_hide_cursor_when_active);
 
+		INI_OptionWriteUInt("UseSimplifiedPluginNames", guioptions.use_simplified_plugin_names);
+
 		INI_OptionWriteUInt("OverclockFactor", emuoptions.OverclockFactor);
 
 		INI_OptionWriteUInt("GEFiringRateHack", emuoptions.GEFiringRateHack);
@@ -567,6 +570,7 @@ void InitAll1964Options(void)
 	guioptions.highfreqtimer = TRUE;
 	guioptions.borderless_fullscreen = FALSE;
 	guioptions.auto_hide_cursor_when_active = TRUE;
+	guioptions.use_simplified_plugin_names = TRUE;
 	romlistNameToDisplay = ROMLIST_DISPLAY_FILENAME;
 	romlist_sort_method = ROMLIST_GAMENAME;
 

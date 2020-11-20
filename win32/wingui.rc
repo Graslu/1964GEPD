@@ -1260,10 +1260,12 @@ BEGIN
     CONTROL         153,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE | 
                     SS_SUNKEN,14,149,40,37,WS_EX_DLGMODALFRAME | 
                     WS_EX_TRANSPARENT | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE
-    GROUPBOX        "RSP",IDC_STATIC,7,202,246,31,BS_CENTER
+    GROUPBOX        "RSP",IDC_SHOW_RSP_GROUP_BOX,7,202,246,31,BS_CENTER
     CONTROL         "Use RSP Plugin (Needed for GE, Tooie, LLE Audio, and JPEG)",
                     IDC_USE_RSP_PLUGIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     14,215,238,10
+    CONTROL         "Use Simplified Plugin Names",IDC_USE_SIMPLIFIED_NAMES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,263,105,10
     GROUPBOX        "Input",IDC_STATIC,7,136,246,59,BS_CENTER
 END
 

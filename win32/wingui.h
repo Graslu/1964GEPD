@@ -139,6 +139,7 @@ struct GUIOPTIONS
 	BOOL	highfreqtimer;
 	BOOL	borderless_fullscreen;
 	BOOL	auto_hide_cursor_when_active;
+	BOOL	use_simplified_plugin_names;
 };
 
 extern struct GUIOPTIONS	guioptions;

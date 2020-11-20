@@ -504,8 +504,10 @@
 #define IDC_CHECK1                      1380
 #define IDC_OPCODETRACE                 1380
 #define IDC_USE_RSP_PLUGIN              1380
+#define IDC_USE_SIMPLIFIED_NAMES        1381
 #define IDC_CHECK_LOGGING               1381
 #define IDC_VEC181                      1381
+#define IDC_SHOW_RSP_GROUP_BOX          1382
 #define IDC_VEC182                      1382
 #define IDC_VEC183                      1383
 #define IDC_VIEWINTEL                   1383
