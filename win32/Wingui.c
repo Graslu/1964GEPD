@@ -465,21 +465,22 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 	}
 
 
-_HOPPITY:
-	if(GetMessage(&msg, NULL, 0, 0))
+	while(1) // new message pump
 	{
-		if(!TranslateAccelerator(gui.hwnd1964main, gui.hAccTable, &msg))
+		if(GetMessage(&msg, NULL, 0, 0) > 0) // messages to be processed
 		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			if(!TranslateAccelerator(gui.hwnd1964main, gui.hAccTable, &msg))
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			else
+				Sleep(10);
 		}
+		else // error, abort
+			break;
 	}
-	else
-	{
-		return msg.wParam;
-	}
-
-	goto _HOPPITY;
+	return msg.wParam;
 }
 
 /*
