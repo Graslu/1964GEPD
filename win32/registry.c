@@ -241,13 +241,13 @@ int ReadConfiguration(void)
 	defaultoptions.Use_HLE = USEHLE_NO;
 #endif
 	guistatus.clientwidth = INI_OptionReadUInt("ClientWindowWidth");
-	if(guistatus.clientwidth < 320) guistatus.clientwidth = 640;
+	if(guistatus.clientwidth < 320) guistatus.clientwidth = 864;
 	guistatus.clientheight = INI_OptionReadUInt("ClientWindowHeight");
-	if(guistatus.clientheight < 200) guistatus.clientheight = 480;
+	if(guistatus.clientheight < 200) guistatus.clientheight = 586;
 	guistatus.window_position.top = INI_OptionReadUInt("1964WindowTOP");
-	if(guistatus.window_position.top < 0) guistatus.window_position.top = 100;
+	if(guistatus.window_position.top < 0) guistatus.window_position.top = 0;
 	guistatus.window_position.left = INI_OptionReadUInt("1964WindowLeft");
-	if(guistatus.window_position.left < 0) guistatus.window_position.left = 100;
+	if(guistatus.window_position.left < 0) guistatus.window_position.left = 0;
 	guistatus.WindowIsMaximized = INI_OptionReadUInt("1964WindowIsMaximized");
 
 #ifdef DEBUG_COMMON
@@ -598,8 +598,8 @@ void InitAll1964Options(void)
 
 	guistatus.clientwidth = 864;
 	guistatus.clientheight = 586;
-	guistatus.window_position.top = 100;
-	guistatus.window_position.left = 100;
+	guistatus.window_position.top = 251;
+	guistatus.window_position.left = 600;
 	guistatus.WindowIsMaximized = FALSE;
 	romListColumns[0].colWidth = 244;
 	romListColumns[1].colWidth = 57;

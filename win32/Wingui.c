@@ -3921,8 +3921,8 @@ void Exit1964(void)
 
 	placement.length = sizeof(WINDOWPLACEMENT);
 	GetWindowPlacement(gui.hwnd1964main, &placement);
-	guistatus.clientwidth = placement.rcNormalPosition.right - placement.rcNormalPosition.left;
-	guistatus.clientheight = placement.rcNormalPosition.bottom - placement.rcNormalPosition.top;
+	//guistatus.clientwidth = placement.rcNormalPosition.right - placement.rcNormalPosition.left;
+	//guistatus.clientheight = placement.rcNormalPosition.bottom - placement.rcNormalPosition.top;
 	guistatus.window_position.left = placement.rcNormalPosition.left;
 	guistatus.window_position.top = placement.rcNormalPosition.top;
 	guistatus.WindowIsMaximized = (placement.showCmd == SW_SHOWMAXIMIZED);
