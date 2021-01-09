@@ -3020,10 +3020,13 @@ void PDSpeedHack(void)
 
 #undef GE_readfiringrate
 #undef GE_menupage
+#undef GE_updateaimtarget
 #undef PD_tickrate
 #undef PD_timer
+#undef PD_mpisactive
 #undef PD_mpspeed
 #undef PD_masterclock
+#undef PD_updateaimtarget
 #undef PD_newcodearea
 #undef PD_newcodearealastcode
 
