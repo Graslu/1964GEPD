@@ -2959,20 +2959,31 @@ void SetCounterFactor(int factor)
 
 #define GE_readfiringrate 0x92B1C // function used to return current weapon's firing rate - only for automatics (single shot weapons can be left as they are)
 #define GE_menupage 0x8002A8C0 // menu page id, used to check if it is safe to inject the firing rate patch
+#define GE_updateaimtarget 0x5F624 // location of AI function to update aim target
 #define PD_tickrate 0x80099FC0 // game loop's tickrate (used to detect when PD is running at lower framerate - PD was designed to halve game tickrate when detected bottlenecks)
 #define PD_timer 0x80099FE8 // we intentionally screw with this timer address to force PD to run at unlocked speed
 #define PD_mpisactive 0x8009A2D4 // flag set to 1 if mp mode is active
 #define PD_mpspeed 0x800ACB94 // used to check if the match is set to slow motion or normal speed
 #define PD_masterclock 0x8038CECC // location of master clock code (TLB'd to 7F)
+#define PD_updateaimtarget 0x8025A7C8 // location of AI function to update aim target (TLB'd to 7F)
 #define PD_newcodearea 0x803C78E0 // free area to write new timing code for 60fps mode
-#define PD_newcodearealastcode 0x803C7964 // used to check if memory is safe to write
+#define PD_newcodearealastcode 0x803C7984 // used to check if memory is safe to write
 
-static const unsigned int codearray[34] = {0x3C028006, 0x8C42EE10, 0x240E0007, 0x51C2000E, 0x3C02800A, 0x3C02800B, 0x8042CB97, 0x304E0080, 0x15C00017, 0x304E0040, 0x11C00012, 0x3C02800A, 0x8C42A424, 0x14400012, 0x00000000, 0x10000010, 0x00129040, 0x00000000, 0x804221D3, 0x30420040, 0x10400007, 0x00000000, 0x3C02800A, 0x8C42A424, 0x14400007, 0x00000000, 0x10000005, 0x00129040, 0x3C02800A, 0x8C42A424, 0x54400001, 0x00129040, 0x0BC5B3B5, 0x3631EBC2}; // hijack timing code to allow combat boost at 60fps
+static const unsigned int pdcodearray[42] = {0x3C028006, 0x8C42EE10, 0x240E0007, 0x51C2000E, 0x3C02800A, 0x3C02800B, 0x8042CB97, 0x304E0080, 0x15C00017, 0x304E0040, 0x11C00012, 0x3C02800A, 0x8C42A424, 0x14400012, 0x00000000, 0x10000010, 0x00129040, 0x00000000, 0x804221D3, 0x30420040, 0x10400007, 0x00000000, 0x3C02800A, 0x8C42A424, 0x14400007, 0x00000000, 0x10000005, 0x00129040, 0x3C02800A, 0x8C42A424, 0x54400001, 0x00129040, 0x0BC5B3B5, 0x3631EBC2, 0x8DCE0020, 0x85CF0014, 0x85D80016, 0x15F80002, 0x27180001, 0xA5D80016, 0x0BC0C495, 0xAC860050}; // hijack timing code to allow combat boost at 60fps and fix camping guards at 60fps
+static const unsigned int gecodearray[20] = {0x27BDFFE8, 0x808E0007, 0x24010008, 0x00001025, 0x15C1000D, 0x8C8F004C, 0x31F80060, 0x1300000A, 0x8C8E001C, 0x85CF0030, 0x85D80032, 0x15F80002, 0x27180001, 0xA5D80032, 0xAC85004C, 0x0FC093E3, 0xAC860050, 0x34020001, 0x0BC0D71E, 0x27BD0018}; // fix camping guards at 60fps
 
 void GEFiringRateHack(void)
 {
+	int codeindex;
 	if((LOAD_UWORD_PARAM(GE_menupage) == 0 || LOAD_UWORD_PARAM(GE_menupage) > 10U) || gMemoryState.ROM_Image[GE_readfiringrate + 1] != 0x00) // if game isn't safe to patch or nop instruction doesn't exists
 		return;
+	for(codeindex = 0; codeindex < 20; codeindex++)
+	{
+		gMemoryState.ROM_Image[GE_updateaimtarget + (codeindex * 4)] = gecodearray[codeindex] & 0xFF; // apply camping guard 60fps fix
+		gMemoryState.ROM_Image[GE_updateaimtarget + (codeindex * 4) + 1] = (gecodearray[codeindex] >> 8) & 0xFF;
+		gMemoryState.ROM_Image[GE_updateaimtarget + (codeindex * 4) + 2] = (gecodearray[codeindex] >> 16) & 0xFF;
+		gMemoryState.ROM_Image[GE_updateaimtarget + (codeindex * 4) + 3] = (gecodearray[codeindex] >> 24) & 0xFF;
+	}
 	gMemoryState.ROM_Image[GE_readfiringrate] = 0x00021040 & 0xFF; // apply firing rate 60fps hack
 	gMemoryState.ROM_Image[GE_readfiringrate + 1] = (0x00021040 >> 8) & 0xFF;
 	gMemoryState.ROM_Image[GE_readfiringrate + 2] = (0x00021040 >> 16) & 0xFF;
@@ -2982,12 +2993,14 @@ void GEFiringRateHack(void)
 void PDTimingHack(void)
 {
 	int codeindex;
-	if(LOAD_UWORD_PARAM(PD_masterclock) == 0x3652FAF0 && LOAD_UWORD_PARAM(PD_newcodearealastcode) == 0x73666572) // inject new timing code
+	if(LOAD_UWORD_PARAM(PD_masterclock) == 0x3652FAF0 && LOAD_UWORD_PARAM(PD_newcodearealastcode) == 0x4C322825) // inject new timing code and camping guard 60fps fix
 	{
-		for(codeindex = 0; codeindex < 34; codeindex++)
-			LOAD_UWORD_PARAM(PD_newcodearea + codeindex * 4) = codearray[codeindex];
+		for(codeindex = 0; codeindex < 42; codeindex++)
+			LOAD_UWORD_PARAM(PD_newcodearea + (codeindex * 4)) = pdcodearray[codeindex];
 		LOAD_UWORD_PARAM(PD_masterclock) = 0x0BC69E38;
 		LOAD_UWORD_PARAM(PD_masterclock + 4) = 0x3652FAF0;
+		LOAD_UWORD_PARAM(PD_updateaimtarget) = 0x0FC69E5A;
+		LOAD_UWORD_PARAM(PD_updateaimtarget + 4) = 0x8C8E0020;
 	}
 }
 
