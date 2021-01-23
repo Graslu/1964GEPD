@@ -2960,6 +2960,7 @@ void SetCounterFactor(int factor)
 #define GE_readfiringrate 0x92B1C // function used to return current weapon's firing rate - only for automatics (single shot weapons can be left as they are)
 #define GE_menupage 0x8002A8C0 // menu page id, used to check if it is safe to inject the firing rate patch
 #define GE_updateaimtarget 0x5F624 // location of AI function to update aim target
+#define GE_dronegunfiringrate 0x7DF88 // drone gun sfx firing rate delta
 #define PD_tickrate 0x80099FC0 // game loop's tickrate (used to detect when PD is running at lower framerate - PD was designed to halve game tickrate when detected bottlenecks)
 #define PD_timer 0x80099FE8 // we intentionally screw with this timer address to force PD to run at unlocked speed
 #define PD_mpisactive 0x8009A2D4 // flag set to 1 if mp mode is active
@@ -2988,6 +2989,10 @@ void GEFiringRateHack(void)
 	gMemoryState.ROM_Image[GE_readfiringrate + 1] = (0x00021040 >> 8) & 0xFF;
 	gMemoryState.ROM_Image[GE_readfiringrate + 2] = (0x00021040 >> 16) & 0xFF;
 	gMemoryState.ROM_Image[GE_readfiringrate + 3] = (0x00021040 >> 24) & 0xFF;
+	gMemoryState.ROM_Image[GE_dronegunfiringrate] = 0x250B0004 & 0xFF; // make drone guns fire at half the rate
+	gMemoryState.ROM_Image[GE_dronegunfiringrate + 1] = (0x250B0004 >> 8) & 0xFF;
+	gMemoryState.ROM_Image[GE_dronegunfiringrate + 2] = (0x250B0004 >> 16) & 0xFF;
+	gMemoryState.ROM_Image[GE_dronegunfiringrate + 3] = (0x250B0004 >> 24) & 0xFF;
 }
 
 void PDTimingHack(void)
@@ -3021,6 +3026,7 @@ void PDSpeedHack(void)
 #undef GE_readfiringrate
 #undef GE_menupage
 #undef GE_updateaimtarget
+#undef GE_dronegunfiringrate
 #undef PD_tickrate
 #undef PD_timer
 #undef PD_mpisactive
