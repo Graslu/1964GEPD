@@ -679,7 +679,7 @@ char	temp_input_plugin[256];
 const char simplified_plugin_names[][2][100] =
 {
 	// video plugins
-	{{"Highest: GLideN64 (New)"},			{"GLideN64 rev.eb8ac401"}},
+	{{"Highest: GLideN64 (New)"},			{"GLideN64 rev.35554dab"}},
 	{{"High: GLideN64 (Old)"},				{"GLideN64 Release V2 (Old)"}},
 	{{"Medium: Glide64 (Final)"},			{"Glide64 'Final' Date: May  8 2012"}},
 	{{"Low: Jabo (1.6.1)"},					{"Jabo's Direct3D8 1.6.1"}},
