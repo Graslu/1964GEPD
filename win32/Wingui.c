@@ -2877,7 +2877,7 @@ LRESULT APIENTRY SetVideoPluginDialog(HWND hDlg, unsigned message, WORD wParam, 
 			EndDialog(hDlg, TRUE);
 			return(TRUE);
 		case IDC_GLIDEN64:
-			strcpy(gRegSettings.VideoPlugin, "GLideN64.dll");
+			strcpy(gRegSettings.VideoPlugin, "GLN64_2020.dll");
 		default:
 			EndDialog(hDlg, TRUE);
 			return(TRUE);
