@@ -2961,6 +2961,7 @@ void SetCounterFactor(int factor)
 #define GE_menupage 0x8002A8C0 // menu page id, used to check if it is safe to inject the firing rate patch
 #define GE_updateaimtarget 0x5F624 // location of AI function to update aim target
 #define GE_dronegunfiringrate 0x7DF88 // drone gun sfx firing rate delta
+#define GE_watchlaserweapon (0x80020D90U + 0x11704 + (0x70 * 0x17))
 #define PD_tickrate 0x80099FC0 // game loop's tickrate (used to detect when PD is running at lower framerate - PD was designed to halve game tickrate when detected bottlenecks)
 #define PD_timer 0x80099FE8 // we intentionally screw with this timer address to force PD to run at unlocked speed
 #define PD_mpisactive 0x8009A2D4 // flag set to 1 if mp mode is active
@@ -2993,6 +2994,10 @@ void GEFiringRateHack(void)
 	gMemoryState.ROM_Image[GE_dronegunfiringrate + 1] = (0x250B0004 >> 8) & 0xFF;
 	gMemoryState.ROM_Image[GE_dronegunfiringrate + 2] = (0x250B0004 >> 16) & 0xFF;
 	gMemoryState.ROM_Image[GE_dronegunfiringrate + 3] = (0x250B0004 >> 24) & 0xFF;
+	if(LOAD_UWORD_PARAM(GE_watchlaserweapon + 0x20) == 0x03E8FF00 && LOAD_UWORD_PARAM(GE_watchlaserweapon + 0x6C) == 0x00600F91) // if watch laser stats are default, fix for 60fps
+	{
+		LOAD_UWORD_PARAM(GE_watchlaserweapon + 0x20) = 0x03E8FF02; // set firing rate to 2 frames
+	}
 }
 
 void PDTimingHack(void)
@@ -3027,6 +3032,7 @@ void PDSpeedHack(void)
 #undef GE_menupage
 #undef GE_updateaimtarget
 #undef GE_dronegunfiringrate
+#undef GE_watchlaserweapon
 #undef PD_tickrate
 #undef PD_timer
 #undef PD_mpisactive
