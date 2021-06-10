@@ -191,6 +191,8 @@ void CALLBACK TimerProc(HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime)
 				{
 					if(emuoptions.GEFiringRateHack && emuoptions.OverclockFactor != 1 && (!strcmp(currentromoptions.Game_Name, "GOLDENEYE") || strstr(currentromoptions.Game_Name, "GOLD") != NULL))
 						GEFiringRateHack();
+					if(emuoptions.GEDisableHeadRoll && (!strcmp(currentromoptions.Game_Name, "GOLDENEYE") || strstr(currentromoptions.Game_Name, "GOLD") != NULL))
+						GEDisableHeadRoll();
 					else if(emuoptions.PDSpeedHack && emuoptions.OverclockFactor != 1 && (!strcmp(currentromoptions.Game_Name, "Perfect Dark") || !strcmp(currentromoptions.Game_Name, "GoldenEye X") || strstr(currentromoptions.Game_Name, "Perfect")))
 						PDSpeedHack();
 					if(emustatus.gepd_pause)
@@ -906,6 +908,22 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				emuoptions.GEFiringRateHack = TRUE;
 				if (!guistatus.IsFullScreen && emustatus.Emu_Is_Running)
 					MessageBox(gui.hwnd1964main, "Please restart ROM to enable firing rate hack.", "Information", MB_ICONINFORMATION | MB_OK);
+			}
+			break;
+		case ID_GEDISABLEHEADROLL:
+			if(emuoptions.GEDisableHeadRoll)
+			{
+				CheckMenuItem(gui.hMenu1964main, ID_GEDISABLEHEADROLL, MF_UNCHECKED);
+				emuoptions.GEDisableHeadRoll = FALSE;
+				if (!guistatus.IsFullScreen && emustatus.Emu_Is_Running)
+					MessageBox(gui.hwnd1964main, "Please restart ROM to enable head roll.", "Information", MB_ICONINFORMATION | MB_OK);
+			}
+			else
+			{
+				CheckMenuItem(gui.hMenu1964main, ID_GEDISABLEHEADROLL, MF_CHECKED);
+				emuoptions.GEDisableHeadRoll = TRUE;
+				if (!guistatus.IsFullScreen && emustatus.Emu_Is_Running)
+					MessageBox(gui.hwnd1964main, "Please restart ROM to disable head roll.", "Information", MB_ICONINFORMATION | MB_OK);
 			}
 			break;
 		case ID_PDSPEEDHACK:
@@ -2921,6 +2939,7 @@ void SetOverclockFactor(int factor)
 	EnableMenuItem(gui.hMenu1964main, ID_PDSPEEDHACK, factor != 1 ? MF_ENABLED : MF_GRAYED);
 	EnableMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, emuoptions.PDSpeedHack && factor != 1 ? MF_ENABLED : MF_GRAYED);
 	CheckMenuItem(gui.hMenu1964main, ID_GEFIRINGHACK, emuoptions.GEFiringRateHack && factor != 1 ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(gui.hMenu1964main, ID_GEDISABLEHEADROLL, emuoptions.GEDisableHeadRoll ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACK, emuoptions.PDSpeedHack && factor != 1 ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, emuoptions.PDSpeedHack && emuoptions.PDSpeedHackBoost && factor != 1 ? MF_CHECKED : MF_UNCHECKED);
 	if(mouseinjectorpresent)
@@ -2973,6 +2992,7 @@ void SetCounterFactor(int factor)
 
 static const unsigned int pdcodearray[42] = {0x3C028006, 0x8C42EE10, 0x240E0007, 0x51C2000E, 0x3C02800A, 0x3C02800B, 0x8042CB97, 0x304E0080, 0x15C00017, 0x304E0040, 0x11C00012, 0x3C02800A, 0x8C42A424, 0x14400012, 0x00000000, 0x10000010, 0x00129040, 0x00000000, 0x804221D3, 0x30420040, 0x10400007, 0x00000000, 0x3C02800A, 0x8C42A424, 0x14400007, 0x00000000, 0x10000005, 0x00129040, 0x3C02800A, 0x8C42A424, 0x54400001, 0x00129040, 0x0BC5B3B5, 0x3631EBC2, 0x8DCE0020, 0x85CF0014, 0x85D80016, 0x15F80002, 0x27180001, 0xA5D80016, 0x0BC0C495, 0xAC860050}; // hijack timing code to allow combat boost at 60fps and fix camping guards at 60fps
 static const unsigned int gecodearray[20] = {0x27BDFFE8, 0x808E0007, 0x24010008, 0x00001025, 0x15C1000D, 0x8C8F004C, 0x31F80060, 0x1300000A, 0x8C8E001C, 0x85CF0030, 0x85D80032, 0x15F80002, 0x27180001, 0xA5D80032, 0xAC85004C, 0x0FC093E3, 0xAC860050, 0x34020001, 0x0BC0D71E, 0x27BD0018}; // fix camping guards at 60fps
+static const unsigned int geheadrollnop[6] = {0x000C2B60, 0x000C2B7C, 0x000C2B98, 0x000C2BB4, 0x000C2BD0, 0x000C2BEC}; // head roll float save instructions in rom, nop to disable head roll
 
 void GEFiringRateHack(void)
 {
@@ -2997,6 +3017,20 @@ void GEFiringRateHack(void)
 	if(LOAD_UWORD_PARAM(GE_watchlaserweapon + 0x20) == 0x03E8FF00 && LOAD_UWORD_PARAM(GE_watchlaserweapon + 0x6C) == 0x00600F91) // if watch laser stats are default, fix for 60fps
 	{
 		LOAD_UWORD_PARAM(GE_watchlaserweapon + 0x20) = 0x03E8FF02; // set firing rate to 2 frames
+	}
+}
+
+void GEDisableHeadRoll(void)
+{
+	int index;
+	if((LOAD_UWORD_PARAM(GE_menupage) == 0 || LOAD_UWORD_PARAM(GE_menupage) > 10U) || gMemoryState.ROM_Image[geheadrollnop[0]] == 0x00) // if game isn't safe to patch or instructions have already been patched
+		return;
+	for(index = 0; index < 6; index++) // disable head roll float save instructions in rom
+	{
+		gMemoryState.ROM_Image[geheadrollnop[index] + 0] = 0;
+		gMemoryState.ROM_Image[geheadrollnop[index] + 1] = 0;
+		gMemoryState.ROM_Image[geheadrollnop[index] + 2] = 0;
+		gMemoryState.ROM_Image[geheadrollnop[index] + 3] = 0;
 	}
 }
 
@@ -3027,20 +3061,6 @@ void PDSpeedHack(void)
 		LOAD_UWORD_PARAM(PD_timer) = 0x00000001; // set clock back to default (reset fps lock to 60)
 	}
 }
-
-#undef GE_readfiringrate
-#undef GE_menupage
-#undef GE_updateaimtarget
-#undef GE_dronegunfiringrate
-#undef GE_watchlaserweapon
-#undef PD_tickrate
-#undef PD_timer
-#undef PD_mpisactive
-#undef PD_mpspeed
-#undef PD_masterclock
-#undef PD_updateaimtarget
-#undef PD_newcodearea
-#undef PD_newcodearealastcode
 
 /*
  =======================================================================================================================
@@ -3078,9 +3098,6 @@ void GEPDPause(BOOL pause)
 		alreadypaused = FALSE;
 	}
 }
-
-#undef GE_pause
-#undef PD_pause
 
 /*
  =======================================================================================================================

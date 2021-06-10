@@ -780,6 +780,7 @@
 #define ID_GEFIRINGHACK                 1545
 #define ID_PDSPEEDHACK                  1546
 #define ID_PDSPEEDHACKBOOST             1547
+#define ID_GEDISABLEHEADROLL            1548
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

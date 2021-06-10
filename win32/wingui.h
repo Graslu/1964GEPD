@@ -57,6 +57,7 @@ void				KillCPUThread(void);
 void				SetOverclockFactor(int factor);
 void				SetCounterFactor(int);
 void				GEFiringRateHack(void);
+void				GEDisableHeadRoll(void);
 void				PDTimingHack(void);
 void				PDSpeedHack(void);
 void				GEPDPause(BOOL pause);
