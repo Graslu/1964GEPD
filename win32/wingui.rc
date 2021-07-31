@@ -147,8 +147,8 @@ BEGIN
         END
         POPUP "Counter Factor"
         BEGIN
-            MENUITEM "1 x .5 Half Rate\tCtrl+1",    ID_CF_CF1
-            MENUITEM "1 x 1 Full Rate (Default)\tCtrl+2", ID_CF_CF2, CHECKED
+            MENUITEM "1 x .5 Half Rate\tCtrl+1",    ID_CF_CF1, CHECKED
+            MENUITEM "1 x 1 Full Rate (Default)\tCtrl+2", ID_CF_CF2
             MENUITEM "2 x 1 Half Rate\tCtrl+3",     ID_CF_CF3
             MENUITEM "2 x 2 Full Rate\tCtrl+4",     ID_CF_CF4
             MENUITEM "3 x 1.5 Half Rate\tCtrl+5",   ID_CF_CF5
@@ -232,7 +232,7 @@ BEGIN
             MENUITEM "Debug SI Interrupts",         ID_DEBUGSIINTERRUPTS
         END
     END
-    POPUP "&Overclock/Hacks"
+    POPUP "&Overclock"
     BEGIN
         MENUITEM "Stock",                       ID_OVERCLOCKSTOCK
         MENUITEM SEPARATOR
