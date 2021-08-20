@@ -444,7 +444,7 @@ LRESULT APIENTRY RomListDialog(HWND hDlg, unsigned message, WORD wParam, LONG lP
 	int		tvsystem;
 	/*~~~~~~~~~~~~~~~~~~~~~~~*/
 
-	if(!strcmp(romlist[selected_rom_index]->pinientry->Game_Name, "Perfect Dark") || !strcmp(romlist[selected_rom_index]->pinientry->Game_Name, "GoldenEye X") || strstr(romlist[selected_rom_index]->pinientry->Game_Name, "Perfect") != NULL)
+	if(!strncmp(romlist[selected_rom_index]->pinientry->Game_Name, "Perfect Dark", 12) || !strncmp(romlist[selected_rom_index]->pinientry->Game_Name, "GoldenEye X", 11) || strnstr(romlist[selected_rom_index]->pinientry->Game_Name, "Perfect", 7) != NULL)
 		romlist[selected_rom_index]->pinientry->Eeprom_size = EEPROMSIZE_16KB;
 
 	switch(message)

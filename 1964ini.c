@@ -153,10 +153,10 @@ void GenerateCurrentRomOptions(void)
 
 	if(RomListSelectedEntry()->pinientry->countrycode == 0x45) // if USA ROM
 	{
-		if(!strcmp(rominfo.name, "GOLDENEYE") || strstr(rominfo.name, "GOLD") != NULL)
+		if(!strncmp(rominfo.name, "GOLDENEYE", 9) || strnstr(rominfo.name, "GOLD", 4) != NULL)
 			WriteProject64RDB(RomListSelectedEntry()->pinientry->crc1, RomListSelectedEntry()->pinientry->crc2, RomListSelectedEntry()->pinientry->countrycode);
 
-		if(!strcmp(rominfo.name, "Perfect Dark") || !strcmp(rominfo.name, "GoldenEye X") || strstr(rominfo.name, "Perfect") != NULL)
+		if(!strncmp(rominfo.name, "Perfect Dark", 12) || !strncmp(rominfo.name, "GoldenEye X", 11) || strnstr(rominfo.name, "Perfect", 7) != NULL)
 		{
 			currentromoptions.Eeprom_size = EEPROMSIZE_16KB;
 			WriteProject64RDB(RomListSelectedEntry()->pinientry->crc1, RomListSelectedEntry()->pinientry->crc2, RomListSelectedEntry()->pinientry->countrycode);

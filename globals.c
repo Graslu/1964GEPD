@@ -59,3 +59,38 @@ void HideCursor(int state)
 	}
 	ShowWindow(gui.hStatusBar, guistatus.IsFullScreen || !guioptions.display_statusbar ? SW_HIDE : SW_SHOW);
 }
+
+/*
+ =======================================================================================================================
+    MSVC doesn't have strnstr() yet so let's add it here
+ =======================================================================================================================
+ */
+__forceinline uint32 strnlen(const char *needle, uint32 len)
+{
+	const char *pStr = needle;
+
+	while (((len--) > 0) && (*pStr != '\0'))
+	{
+		pStr++;
+	}
+	return (pStr-needle);
+}
+
+char *strnstr(const char *haystack, const char *needle, uint32 len)
+{
+	int i;
+	uint32 needle_len;
+
+	if ((needle_len = strnlen(needle, len)) == 0)
+		return (char *)haystack;
+
+	for (i=0; i<=(int)(len-needle_len); i++)
+	{
+		if ((haystack[0] == needle[0]) &&
+		(0 == strncmp(haystack, needle, needle_len)))
+			return (char *)haystack;
+
+		haystack++;
+	}
+	return NULL;
+}

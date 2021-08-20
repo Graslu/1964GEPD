@@ -44,6 +44,7 @@
 
 extern void __cdecl DisplayError(char *Message, ...);
 extern void HideCursor(int state);
+extern char *strnstr(const char *haystack, const char *needle, uint32 len);
 
 typedef struct
 {
