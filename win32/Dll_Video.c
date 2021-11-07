@@ -180,6 +180,7 @@ BOOL VIDEO_InitiateGFX(GFX_INFO Gfx_Info)
 {
 	RECT Rect;
 	
+	VIDEO_DllClose();
 	GFX_PluginRECT.UseThis = FALSE;
 
 	__try
