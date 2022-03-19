@@ -2,7 +2,7 @@
 
 * https://github.com/Graslu/1964GEPD/releases
 
-1964 0.8.5, modified for use with the [Mouse Injector for GE/PD](https://github.com/carnivoroussociety/MouseInjectorGEPD)
+1964 0.8.5, modified for use with the Mouse Injector for GE/PD
 
 # Copyright
 1964 is Copyright (c) 1999-2002 Joel Middendorf
