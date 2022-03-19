@@ -1,6 +1,6 @@
 # 1964 GEPD Edition
 
-* https://github.com/carnivoroussociety/1964GEPD/releases
+* https://github.com/Graslu/1964GEPD/releases
 
 1964 0.8.5, modified for use with the [Mouse Injector for GE/PD](https://github.com/carnivoroussociety/MouseInjectorGEPD)
 
