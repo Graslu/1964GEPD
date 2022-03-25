@@ -4,7 +4,7 @@
 
 1964 0.8.5, modified for use with the Mouse Injector for GE/PD
 
-Please note that the only games that benefit of this branch are GoldenEye 007 and Perfect Dark for Nintendo 64. Any other game will have negative or no impact at all. ROM files not included.
+Please note: The only games that benefit of this branch are GoldenEye 007 and Perfect Dark for Nintendo 64. Any other game will have negative or no impact at all. ROM files not included.
 
 # Copyright
 1964 is Copyright (c) 1999-2002 Joel Middendorf
