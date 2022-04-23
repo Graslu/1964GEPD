@@ -1204,12 +1204,13 @@ void SaveCmdLineParameter(char *cmdline)
 
 //To get a command line parameter if available, please pass a flag
 // Flags:
-//	"-v"	-> return video plugin name
 //	"-a"	-> return audio plugin name
+//	"-v"	-> return video plugin name
 //  "-c"	-> return controller plugin name
+//	"-r"	-> return rom path
 //  "-g"	-> return game name to run
 //	"-f"	-> return play-in-full-screen flag
-//	"-r"	-> return rom path
+//	"-o"	-> return overclock factor
 char *CmdLineArgFlags[] =
 {
 	"-a",
@@ -1217,7 +1218,8 @@ char *CmdLineArgFlags[] =
 	"-c",
 	"-r",
 	"-g",
-	"-f"
+	"-f",
+	"-o"
 };
 
 void GetCmdLineParameter(CmdLineParameterType arg, char *buf)

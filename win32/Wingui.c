@@ -1859,6 +1859,7 @@ BOOL StartGameByCommandLine()
 		INI_ENTRY	*pentry;
 		long		filesize;
 		char		tempstr[20];
+		char		ocfactor;
 		/*~~~~~~~~~~~~~~~~~*/
 		
 		/* Check and create romlist entry for this new loaded rom */
@@ -1878,6 +1879,14 @@ BOOL StartGameByCommandLine()
 		EnableButton(ID_BUTTON_ROM_PROPERTIES, TRUE);
 		EnableMenuItem(gui.hMenu1964main, ID_FILE_CHEAT, MF_ENABLED);
 		
+		GetCmdLineParameter(CMDLINE_OC_FACTOR, tempstr);
+		if( strlen(tempstr) > 0 )
+		{
+			ocfactor = atoi(tempstr);
+			if (ocfactor >= 0 && ocfactor <= 18)
+				SetOverclockFactor(ocfactor);
+		}
+
 		GetCmdLineParameter(CMDLINE_FULL_SCREEN_FLAG, tempstr);
 		if( strlen(tempstr) > 0 )
 		{
