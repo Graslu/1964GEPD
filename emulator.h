@@ -64,7 +64,6 @@ struct EmuOptions
 	BOOL	GEFiringRateHack;
 	BOOL	GEDisableHeadRoll;
 	BOOL	PDSpeedHack;
-	BOOL	PDSpeedHackBoost;
 };
 extern struct EmuOptions	emuoptions;
 

@@ -153,7 +153,6 @@ int ReadConfiguration(void)
 	emuoptions.GEFiringRateHack = INI_OptionReadUInt("GEFiringRateHack");
 	emuoptions.GEDisableHeadRoll = INI_OptionReadUInt("GEDisableHeadRoll");
 	emuoptions.PDSpeedHack = INI_OptionReadUInt("PDSpeedHack");
-	emuoptions.PDSpeedHackBoost = INI_OptionReadUInt("PDSpeedHackBoost");
 	emuoptions.SyncVI = TRUE;
 
 	guioptions.use_default_save_directory = INI_OptionReadUInt("UseDefaultSaveDiectory");
@@ -398,8 +397,6 @@ void WriteConfiguration(void)
 
 		INI_OptionWriteUInt("PDSpeedHack", emuoptions.PDSpeedHack);
 
-		INI_OptionWriteUInt("PDSpeedHackBoost", emuoptions.PDSpeedHackBoost);
-
 		INI_OptionWriteUInt("PauseWhenInactive", guioptions.pause_at_inactive);
 
 		INI_OptionWriteUInt("PauseAtMenu", guioptions.pause_at_menu);
@@ -557,7 +554,6 @@ void InitAll1964Options(void)
 	emuoptions.GEFiringRateHack = TRUE;
 	emuoptions.GEDisableHeadRoll = FALSE;
 	emuoptions.PDSpeedHack = TRUE;
-	emuoptions.PDSpeedHackBoost = FALSE;
 	
 	guioptions.pause_at_inactive = TRUE;
 	guioptions.pause_at_menu = FALSE;

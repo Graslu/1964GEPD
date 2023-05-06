@@ -940,23 +940,6 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACK, MF_CHECKED);
 				emuoptions.PDSpeedHack = TRUE;
 			}
-			emuoptions.PDSpeedHackBoost = FALSE;
-			CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, MF_UNCHECKED);
-			EnableMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, emuoptions.PDSpeedHack && emuoptions.OverclockFactor != 1 ? MF_ENABLED : MF_GRAYED);
-			break;
-		case ID_PDSPEEDHACKBOOST:
-			if(emuoptions.PDSpeedHackBoost)
-			{
-				CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, MF_UNCHECKED);
-				emuoptions.PDSpeedHackBoost = FALSE;
-			}
-			else
-			{
-				CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, MF_CHECKED);
-				emuoptions.PDSpeedHackBoost = TRUE;
-				if (!guistatus.IsFullScreen)
-					MessageBox(gui.hwnd1964main, "Perfect Dark's Speed-Hack can be unstable when injected too quickly.\n\nIf you experience clock skips or instant deaths, turn off Boost.", "Information", MB_ICONINFORMATION | MB_OK);
-			}
 			break;
 		case ID_ABOUT_WARRANTY:
 			if (!guistatus.IsFullScreen)
@@ -2949,11 +2932,9 @@ void SetOverclockFactor(int factor)
 	emuoptions.OverclockFactor = factor;
 	EnableMenuItem(gui.hMenu1964main, ID_GEFIRINGHACK, factor != 1 ? MF_ENABLED : MF_GRAYED);
 	EnableMenuItem(gui.hMenu1964main, ID_PDSPEEDHACK, factor != 1 ? MF_ENABLED : MF_GRAYED);
-	EnableMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, emuoptions.PDSpeedHack && factor != 1 ? MF_ENABLED : MF_GRAYED);
 	CheckMenuItem(gui.hMenu1964main, ID_GEFIRINGHACK, emuoptions.GEFiringRateHack && factor != 1 ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(gui.hMenu1964main, ID_GEDISABLEHEADROLL, emuoptions.GEDisableHeadRoll ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACK, emuoptions.PDSpeedHack && factor != 1 ? MF_CHECKED : MF_UNCHECKED);
-	CheckMenuItem(gui.hMenu1964main, ID_PDSPEEDHACKBOOST, emuoptions.PDSpeedHack && emuoptions.PDSpeedHackBoost && factor != 1 ? MF_CHECKED : MF_UNCHECKED);
 	if(mouseinjectorpresent)
 		CONTROLLER_HookRDRAM((DWORD *)TLB_sDWord_ptr, factor);
 }
@@ -2993,10 +2974,7 @@ void SetCounterFactor(int factor)
 #define GE_updateaimtarget 0x5F624 // location of AI function to update aim target
 #define GE_dronegunfiringrate 0x7DF88 // drone gun sfx firing rate delta
 #define GE_watchlaserweapon (0x80020D90U + 0x11704 + (0x70 * 0x17))
-#define PD_tickrate 0x80099FC0 // game loop's tickrate (used to detect when PD is running at lower framerate - PD was designed to halve game tickrate when detected bottlenecks)
-#define PD_timer 0x80099FE8 // we intentionally screw with this timer address to force PD to run at unlocked speed
-#define PD_mpisactive 0x8009A2D4 // flag set to 1 if mp mode is active
-#define PD_mpspeed 0x800ACB94 // used to check if the match is set to slow motion or normal speed
+#define PD_frameratecal 0x80014388 // location of function that returns when to draw at 60fps (thank you Ryan Dwyer for the code and single-handedly decompiling PD - you absolute legend)
 #define PD_masterclock 0x8038CECC // location of master clock code (TLB'd to 7F)
 #define PD_updateaimtarget 0x8025A7C8 // location of AI function to update aim target (TLB'd to 7F)
 #define PD_newcodearea 0x803C78E0 // free area to write new timing code for 60fps mode
@@ -3062,16 +3040,8 @@ void PDTimingHack(void)
 
 void PDSpeedHack(void)
 {
-	int bruteforce;
-	if(LOAD_UWORD_PARAM(PD_mpisactive) && (LOAD_UWORD_PARAM(PD_mpspeed) & 0x80) == 0x80) // if mp is active and slow motion setting is set to smart, don't set to 60fps
-		return;
-	if(LOAD_SWORD_PARAM(PD_tickrate) == 2) // if PD is running at 30fps
-	{
-		for(bruteforce = 0; bruteforce < (emuoptions.PDSpeedHackBoost ? 48 : 24); bruteforce++)
-			LOAD_UWORD_PARAM(PD_timer) = 0x00000000; // trick the system into thinking there is plenty of room left to run at full speed
-		Sleep(emuoptions.PDSpeedHackBoost ? 12 : 8);
-		LOAD_UWORD_PARAM(PD_timer) = 0x00000001; // set clock back to default (reset fps lock to 60)
-	}
+	if(LOAD_SWORD_PARAM(PD_frameratecal) == 0x0C005431) // if instruction has yet to be overwritten, overwrite jal with hack
+		LOAD_UWORD_PARAM(PD_frameratecal) = 0x10000013; // beq r0, r0, 0x700143D8
 }
 
 /*

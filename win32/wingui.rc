@@ -244,7 +244,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "GE Firing Rate Hack",         ID_GEFIRINGHACK
         MENUITEM "PD Speed-Hack",               ID_PDSPEEDHACK
-        MENUITEM "Boost Speed-Hack Freq",       ID_PDSPEEDHACKBOOST
         MENUITEM SEPARATOR
         MENUITEM "GE Disable Head Roll",        ID_GEDISABLEHEADROLL
     END
