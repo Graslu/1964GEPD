@@ -168,7 +168,14 @@ step2:
 		{
 			if(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
 			{
-				if(GetMessage(&msg, NULL, 0, 0)) DispatchMessage(&msg);
+				if(GetMessage(&msg, NULL, 0, 0))
+				{
+					if(!TranslateAccelerator(gui.hwnd1964main, gui.hAccTable, &msg))
+					{
+						TranslateMessage(&msg);
+						DispatchMessage(&msg);
+					}
+				}
 			}
 		}
 
@@ -238,7 +245,14 @@ void StopEmulator(void)
 		{
 			if(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
 			{
-				if(GetMessage(&msg, NULL, 0, 0)) DispatchMessage(&msg);
+				if(GetMessage(&msg, NULL, 0, 0))
+				{
+					if(!TranslateAccelerator(gui.hwnd1964main, gui.hAccTable, &msg))
+					{
+						TranslateMessage(&msg);
+						DispatchMessage(&msg);
+					}
+				}
 			}
 		}
 
@@ -314,6 +328,7 @@ void CloseEmulator(void)
 	}
 
 	emustatus.Emu_Is_Running = FALSE;
+	emustatus.game_hack = GHACK_NONE;
 	Free_Dynarec();
 
 	*(uint32 *) &gMS_RDRAM[rominfo.RDRam_Size_Hack] = RDRamSizeHackSavedDWord1;
@@ -1196,6 +1211,7 @@ void Dyna_Exception_Service_Routine(uint32 vector)
 			CONTROLLER_RomClosed();
 
 			emustatus.Emu_Is_Running = FALSE;
+			emustatus.game_hack = GHACK_NONE;
 			CloseEmulator();
 		}
 

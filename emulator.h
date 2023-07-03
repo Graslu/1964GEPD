@@ -29,6 +29,7 @@
 enum { WORDTYPE, HWORDTYPE, BYTETYPE, DWORDTYPE, NOCHECKTYPE };
 enum { INIT_EMU_AFTER_PAUSE, REFRESH_DYNA_AFTER_PAUSE, DO_NOTHING_AFTER_PAUSE };
 enum GAME_STOP_REASON { EMURUNNING, EMUSTOP, EMUPAUSE, EMUSWITCHCORE, EMURESUME, VIDEOCRASH, CPUCRASH };
+enum GAME_HACK_DETECTED { GHACK_NONE, GHACK_GE, GHACK_PD };
 
 extern HANDLE CPUThreadHandle;
 extern int Audio_Is_Initialized;
@@ -49,6 +50,7 @@ struct EmuStatus
 	int						action_after_resume;
 	volatile BOOL			Emu_Keep_Running;
 	int						gepd_pause;
+	enum GAME_HACK_DETECTED	game_hack;
 };
 extern struct EmuStatus emustatus;
 

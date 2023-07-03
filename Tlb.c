@@ -799,7 +799,7 @@ void InitTLBOther(void)
 {
 	/* some TLB hacks to speed up some games, but fails at others */
 	trigger_tlb_exception_faster = FALSE;
-	if(strncmp(currentromoptions.Game_Name, "GOLDENEYE", 9) == 0 || strstr(currentromoptions.Game_Name, "GOLD") != NULL)
+	if(emustatus.game_hack == GHACK_GE)
 	{
 		/* Hack for golden eye, game still work without hack, but will be faster with hack */
 		if(rominfo.TV_System == TV_SYSTEM_NTSC)

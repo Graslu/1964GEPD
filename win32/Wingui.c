@@ -189,14 +189,14 @@ void CALLBACK TimerProc(HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime)
 
 				if(rominfo.TV_System == TV_SYSTEM_NTSC) // if USA ROM
 				{
-					if(!strncmp(currentromoptions.Game_Name, "GOLDENEYE", 9) || (strnstr(currentromoptions.Game_Name, "GOLD", 4) != NULL))
+					if(emustatus.game_hack == GHACK_GE)
 					{
-						if(emuoptions.GEFiringRateHack && emuoptions.OverclockFactor != 1)
+						if(emuoptions.GEFiringRateHack && (emuoptions.OverclockFactor != 1))
 							GEFiringRateHack();
 						if(emuoptions.GEDisableHeadRoll)
 							GEDisableHeadRoll();
 					}
-					else if(emuoptions.PDSpeedHack && emuoptions.OverclockFactor != 1 && (!strncmp(currentromoptions.Game_Name, "Perfect Dark", 12) || !strncmp(currentromoptions.Game_Name, "GoldenEye X", 11) || strnstr(currentromoptions.Game_Name, "Perfect", 7)))
+					else if(emuoptions.PDSpeedHack && (emuoptions.OverclockFactor != 1) && (emustatus.game_hack == GHACK_PD))
 						PDSpeedHack();
 					if(emustatus.gepd_pause)
 					{
@@ -237,6 +237,39 @@ LRESULT APIENTRY PropertyPagesProc(HWND hDlg, unsigned message, WORD wParam, LON
 		}
 	}
 	return(FALSE);
+}
+
+#define DPI_AWARENESS_CONTEXT						(HANDLE)
+#define DPI_AWARENESS_CONTEXT_UNAWARE				DPI_AWARENESS_CONTEXT-1
+#define DPI_AWARENESS_CONTEXT_SYSTEM_AWARE			DPI_AWARENESS_CONTEXT-2
+#define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE		DPI_AWARENESS_CONTEXT-3
+#define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2	DPI_AWARENESS_CONTEXT-4
+
+void PreventWindowsDPIScaling(void)
+{
+	typedef BOOL (NTAPI *pSetProcessDPIAwarenessContext)(HWND hwnd);
+	typedef BOOL (NTAPI *pSetProcessDPIAware)(void);
+	pSetProcessDPIAwarenessContext SetProcessDPIAwarenessContext = NULL;
+	pSetProcessDPIAware SetProcessDPIAware = NULL;
+
+    HMODULE hinstUser32 = LoadLibraryW(L"user32.dll");
+	if(!hinstUser32)
+		return;
+
+    SetProcessDPIAwarenessContext = (pSetProcessDPIAwarenessContext)GetProcAddress(hinstUser32, "SetProcessDPIAwarenessContext");
+    if(SetProcessDPIAwarenessContext)
+    {
+        SetProcessDPIAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+    }
+    else
+    {
+        SetProcessDPIAware = (pSetProcessDPIAware)GetProcAddress(hinstUser32, "SetProcessDPIAware");
+        if(SetProcessDPIAware)
+        {
+            SetProcessDPIAware();
+        }
+    }
+	FreeLibrary(hinstUser32);
 }
 
 
@@ -315,6 +348,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmd
 
 	if(hPrevInstance) return FALSE;
 	SaveCmdLineParameter(lpszCmdLine);
+	PreventWindowsDPIScaling();
 
 	gui.szBaseWindowTitle = "1964 0.8.5";
 	gui.hwnd1964main = NULL;		/* handle to main window */
@@ -3056,27 +3090,22 @@ static BOOL alreadypaused = FALSE;
 
 void GEPDPause(BOOL pause)
 {
-	int game;
 	if(rominfo.TV_System != TV_SYSTEM_NTSC) // not USA ROM
 		return;
-	if(!strncmp(currentromoptions.Game_Name, "GOLDENEYE", 9) || strnstr(currentromoptions.Game_Name, "GOLD", 4) != NULL)
-		game = 0;
-	else if(!strncmp(currentromoptions.Game_Name, "Perfect Dark", 12) || !strncmp(currentromoptions.Game_Name, "GoldenEye X", 11) || strnstr(currentromoptions.Game_Name, "Perfect", 7) != NULL)
-		game = 1;
-	else
+	if(emustatus.game_hack == GHACK_NONE)
 		return;
 	if(pause)
 	{
 		emustatus.gepd_pause = 2;
-		if(!LOAD_UWORD_PARAM(!game ? GE_pause : PD_pause))
-			LOAD_UWORD_PARAM(!game ? GE_pause : PD_pause) = 1;
+		if(!LOAD_UWORD_PARAM(emustatus.game_hack == GHACK_GE ? GE_pause : PD_pause))
+			LOAD_UWORD_PARAM(emustatus.game_hack == GHACK_GE ? GE_pause : PD_pause) = 1;
 		else
 			alreadypaused = TRUE, emustatus.gepd_pause = 1;
 	}
 	else
 	{
 		if(!alreadypaused)
-			LOAD_UWORD_PARAM(!game ? GE_pause : PD_pause) = 0;
+			LOAD_UWORD_PARAM(emustatus.game_hack == GHACK_GE ? GE_pause : PD_pause) = 0;
 		alreadypaused = FALSE;
 	}
 }
@@ -3232,12 +3261,13 @@ void PrepareBeforePlay(int IsFullScreen)
 	if(guioptions.auto_hide_cursor_when_active)
 		HideCursor(TRUE);
 
+	emustatus.game_hack = GHACK_NONE;
 	if(rominfo.TV_System == TV_SYSTEM_NTSC) // if USA ROM
 	{
 		if(!strncmp(currentromoptions.Game_Name, "GOLDENEYE", 9) || strnstr(currentromoptions.Game_Name, "GOLD", 4) != NULL)
-			emuoptions.UsingRspPlugin = TRUE;
+			emuoptions.UsingRspPlugin = TRUE, emustatus.game_hack = GHACK_GE;
 		else if(!strncmp(currentromoptions.Game_Name, "Perfect Dark", 12) || !strncmp(currentromoptions.Game_Name, "GoldenEye X", 11) || strnstr(currentromoptions.Game_Name, "Perfect", 7) != NULL)
-			emuoptions.UsingRspPlugin = FALSE;
+			emuoptions.UsingRspPlugin = FALSE, emustatus.game_hack = GHACK_PD;
 	}
 
 	init_whole_mem_func_array();					/* Needed here. The tlb function pointers change. */
@@ -3335,6 +3365,7 @@ void AfterStop(void)
 	ResetWindowSizeAsRemembered();
 
 	emustatus.Emu_Is_Running = FALSE;
+	emustatus.game_hack = GHACK_NONE;
 	EnableMenuItem(gui.hMenu1964main, ID_OPENROM, MF_ENABLED);
 	EnableButton(ID_BUTTON_OPEN_ROM, TRUE);
 	EnableMenuItem(gui.hMenu1964main, IDM_PLUGINS, MF_ENABLED);
