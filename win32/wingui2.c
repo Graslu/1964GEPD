@@ -42,6 +42,7 @@
 #include "registry.h"
 #include "../emulator.h"
 #include "../romlist.h"
+#include "../lua_bizhawk.h"
 
 /*
  =======================================================================================================================
@@ -151,6 +152,7 @@ void InitPluginData(void)
 {
 	Gfx_Info.hWnd = gui.hwnd1964main;
 	Gfx_Info.hStatusBar = gui.hStatusBar;
+	LuaShim_SetRenderTarget(gui.hwnd1964main, gui.hStatusBar);
 	Gfx_Info.MemoryBswaped = TRUE;
 	Gfx_Info.HEADER = (__int8 *) &HeaderDllPass[0];
 	Gfx_Info.RDRAM = (__int8 *) &gMemoryState.RDRAM[0];

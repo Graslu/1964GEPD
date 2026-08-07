@@ -569,7 +569,7 @@ void InitAll1964Options(void)
 	guioptions.display_statusbar = TRUE;
 	guioptions.highfreqtimer = TRUE;
 	guioptions.borderless_fullscreen = FALSE;
-	guioptions.auto_hide_cursor_when_active = TRUE;
+	guioptions.auto_hide_cursor_when_active = FALSE;
 	guioptions.use_simplified_plugin_names = TRUE;
 	romlistNameToDisplay = ROMLIST_DISPLAY_FILENAME;
 	romlist_sort_method = ROMLIST_GAMENAME;
@@ -656,8 +656,13 @@ static float INI_OptionReadFloat(const char *str)
 //==========================================================================
 static char *INI_OptionReadString(const char *str)
 {
+	/*
+	 * temp must outlive this function: every caller does
+	 * strcpy(dest, INI_OptionReadString(...)) on the returned pointer.
+	 */
+	static char temp[0x10000];
 	int foundvar = 1;
-	char temp[0x10000] = "";
+	temp[0] = '\0';
 	if(INI_FindString(str))
 		INI_GetString(temp, sizeof(temp));
 	else

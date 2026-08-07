@@ -78,6 +78,11 @@ BEGIN
         MENUITEM "ROM Properties...",           ID_FILE_ROMINFO, GRAYED
         MENUITEM "Advanced Options...",         ID_DEFAULTOPTIONS
     END
+    POPUP "&Lua"
+    BEGIN
+        MENUITEM "&Open Script...",             ID_LUA_LOADSCRIPT
+        MENUITEM "&Stop Script",                ID_LUA_STOPSCRIPT
+    END
     POPUP "CPU"
     BEGIN
         MENUITEM "&Pause/Play\tF3",             ID_ROM_PAUSE, GRAYED

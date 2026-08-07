@@ -29,7 +29,13 @@
 #define CRASHABLE 1 //so i can go to MSVC disassembler at crash. Disable for release. */
 #endif
 
-//#define NO_CONSTS 1
+/*
+ * Constant propagation folds a store's address into an immediate at compile
+ * time. Built with a modern MSVC that folding is wrong, and the first block of
+ * the boot code emits a store to address 0, which faults as a TLB store miss
+ * before the game ever starts. Disabling it costs nothing measurable.
+ */
+#define NO_CONSTS 1
 //#define SAFE_SLT 1
 //#define SAFE_GATES 1
 //#define SAFE_MATH 1

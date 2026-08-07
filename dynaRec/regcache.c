@@ -71,8 +71,13 @@ void InitRegisterMap(void)
 		 * to be unmapped (written back to memory-- £
 		 * "flushed")
 		 */
+		/*
+		 * ConstMap is indexed by mips register, not by x86 register, so this
+		 * loop covers mips registers 0-7 and the one below covers the rest.
+		 */
 		ConstMap[k].IsMapped = 0;
 		ConstMap[k].value = 0;
+		ConstMap[k].FinalAddressUsedAt = 0xffffffff;
 		FlushedRegistersMap[k].Is32bit = 0;
 	}
 

@@ -45,6 +45,7 @@
 #include "../timer.h"
 #include "../romlist.h"
 #include "../cheatcode.h"
+#include "../lua_bizhawk.h"
 
 #ifdef WINDEBUG_1964
 #include "windebug.h"
@@ -718,6 +719,32 @@ void ProcessMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				CodeList_ReadCode(romlist[selected_rom_index]->pinientry->Game_Name);
 				DialogBox(gui.hInst, "CHEAT_HACK", hWnd, (DLGPROC) CheatAndHackDialog);
 			}
+			break;
+		case ID_LUA_LOADSCRIPT:
+			{
+				/*~~~~~~~~~~~~~~~~~~~~~~~*/
+				OPENFILENAME	ofn;
+				char			luafilename[MAX_PATH];
+				/*~~~~~~~~~~~~~~~~~~~~~~~*/
+
+				luafilename[0] = '\0';
+				memset(&ofn, 0, sizeof(ofn));
+				ofn.lStructSize = sizeof(ofn);
+				ofn.hwndOwner = hWnd;
+				ofn.lpstrFilter = "Lua Scripts (*.lua)\0*.lua\0All Files (*.*)\0*.*\0";
+				ofn.lpstrFile = luafilename;
+				ofn.nMaxFile = MAX_PATH;
+				ofn.lpstrTitle = "Open Lua Script";
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY;
+
+				if(GetOpenFileName((LPOPENFILENAME) & ofn))
+				{
+					LuaShim_LoadScript(luafilename);
+				}
+			}
+			break;
+		case ID_LUA_STOPSCRIPT:
+			LuaShim_StopScript();
 			break;
 		case ID_ABOUT:
 			if (!guistatus.IsFullScreen)
@@ -1546,6 +1573,8 @@ void Play(BOOL WithFullScreen)
 			emustatus.cpucore = INTERPRETER;
 		}
 
+		SetStatusBarText(4, emustatus.cpucore == DYNACOMPILER ? "D" : "I");
+
 		if ((GFX_PluginRECT.UseThis == TRUE) && (emustatus.Emu_Is_Resetting == FALSE))
 		{
 			RECT Rect;
@@ -1766,6 +1795,7 @@ BOOL WinLoadRom(void)
 	char			szFileTitle[MAXFILENAME];
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+	memset(&ofn, 0, sizeof(ofn));
 	memset(&szFileName, 0, sizeof(szFileName));
 	memset(&szFileTitle, 0, sizeof(szFileTitle));
 
@@ -2210,6 +2240,7 @@ void SaveStateByDialog(int format)
 		char			szPath[_MAX_PATH];
 		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+		memset(&ofn, 0, sizeof(ofn));
 		memset(&szFileName, 0, sizeof(szFileName));
 		memset(&szFileTitle, 0, sizeof(szFileTitle));
 		memset(szPath, 0, _MAX_PATH);
@@ -2264,6 +2295,7 @@ void LoadStateByDialog(int format)
 		char			szPath[_MAX_PATH];
 		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+		memset(&ofn, 0, sizeof(ofn));
 		memset(&szFileName, 0, sizeof(szFileName));
 		memset(&szFileTitle, 0, sizeof(szFileTitle));
 		memset(szPath, 0, _MAX_PATH);
@@ -3355,6 +3387,8 @@ void PrepareBeforePlay(int IsFullScreen)
  */
 void AfterStop(void)
 {
+	LuaShim_OnRomClosed();
+
 #ifdef CHEATCODE_LOCK_MEMORY
 	CloseCheatCodeEngineMemoryLock();
 #endif

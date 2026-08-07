@@ -1,0 +1,3 @@
+# These sources are Windows-1252 and mix line endings. Store every file byte for
+# byte so git never rewrites an encoding or an ending it does not understand.
+* -text

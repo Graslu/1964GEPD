@@ -988,7 +988,14 @@ HWND WINAPI CreateRebar(HWND hwndOwner)
    if(!SendMessage(hwndRB, RB_SETBARINFO, 0, (LPARAM)&rbi))
       return NULL;
    // Initialize structure members that both bands will share.
-   rbBand.cbSize = sizeof(REBARBANDINFO);  // Required
+   /*
+    * REBARBANDINFO has gained members since this was written, and comctl32
+    * rejects a cbSize it does not recognise, which leaves the toolbar outside
+    * the rebar showing the black parent background. Ask for the layout that
+    * matches the fields set below rather than sizeof().
+    */
+   memset(&rbBand, 0, sizeof(rbBand));
+   rbBand.cbSize = REBARBANDINFO_V3_SIZE;  // Required
    rbBand.fMask  = RBBIM_COLORS | RBBIM_TEXT /*| RBBIM_BACKGROUND */| 
                    RBBIM_STYLE | RBBIM_CHILD | RBBIM_CHILDSIZE | 
                    RBBIM_SIZE;

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9B3935DB-768E-497D-A5DA-0C9E52E7998B}</ProjectGuid>
+    <RootNamespace>My1964</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(ProjectDir)build\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)build\obj\$(Configuration)\</IntDir>
+    <TargetName>1964</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>DYNAREC;WIN32;NDEBUG;_WINDOWS;ZLIB_DLL;WIN32_LEAN_AND_MEAN;ENABLE_64BIT_FPU;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StructMemberAlignment>16Bytes</StructMemberAlignment>
+      <CallingConvention>FastCall</CallingConvention>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level1</WarningLevel>
+      <CompileAs>CompileAsC</CompileAs>
+      <ExceptionHandling>false</ExceptionHandling>
+      <ConformanceMode>false</ConformanceMode>
+      <SDLCheck>false</SDLCheck>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <!-- This code predates stack cookies and relies on hand-written asm. -->
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <OmitFramePointers>true</OmitFramePointers>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <!-- Match the original project: the recompiler emits x87 code and mixes
+           hand-written __asm with C, so keep SSE2 and aggressive inlining off. -->
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>ddraw.lib;dsound.lib;dxguid.lib;comctl32.lib;opengl32.lib;winmm.lib;$(ProjectDir)zlib\zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <!-- The recompiler executes memory it allocates itself and the memory
+           system reserves RDRAM at a fixed address, neither of which survives
+           DEP or ASLR being switched on. -->
+      <DataExecutionPrevention>false</DataExecutionPrevention>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <LargeAddressAware>false</LargeAddressAware>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+    </Link>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <!-- Emulator core -->
+  <ItemGroup>
+    <ClCompile Include="1964ini.c" />
+    <ClCompile Include="DebugR4300i.c" />
+    <ClCompile Include="FPU.c" />
+    <ClCompile Include="R4300i.c" />
+    <ClCompile Include="Tlb.c" />
+    <ClCompile Include="cheatcode.c" />
+    <ClCompile Include="compiler.c" />
+    <ClCompile Include="debug_option.c" />
+    <ClCompile Include="dma.c" />
+    <ClCompile Include="emulator.c" />
+    <ClCompile Include="fileio.c" />
+    <ClCompile Include="gamesave.c" />
+    <ClCompile Include="globals.c" />
+    <ClCompile Include="hle.c" />
+    <ClCompile Include="iPIF.c" />
+    <ClCompile Include="interrupt.c" />
+    <ClCompile Include="memory.c" />
+    <ClCompile Include="memory2.c" />
+    <ClCompile Include="n64rcp.c" />
+    <ClCompile Include="profiler.c" />
+    <ClCompile Include="romlist.c" />
+    <ClCompile Include="timer.c" />
+    <ClCompile Include="dynaRec\Analyze.c" />
+    <ClCompile Include="dynaRec\OpcodeDebugger.c" />
+    <ClCompile Include="dynaRec\dynaCOP1.c" />
+    <ClCompile Include="dynaRec\dynaCPU.c" />
+    <ClCompile Include="dynaRec\dynaLog.c" />
+    <ClCompile Include="dynaRec\regcache.c" />
+    <ClCompile Include="dynaRec\x86.c" />
+    <ClCompile Include="win32\DLL_Rsp.c" />
+    <ClCompile Include="win32\Dll_Audio.c" />
+    <ClCompile Include="win32\Dll_Input.c" />
+    <ClCompile Include="win32\Dll_Video.c" />
+    <ClCompile Include="win32\registry.c" />
+    <ClCompile Include="win32\windebug.c" />
+    <ClCompile Include="win32\wingui.c" />
+    <ClCompile Include="win32\wingui2.c" />
+  </ItemGroup>
+  <!-- Lua scripting layer. Built as __cdecl so Lua's C function pointers and the
+       luasocket DLL entry point remain compatible. Lua itself lives in lua51.dll
+       because Archipelago's luasocket build imports from that module name. -->
+  <ItemGroup>
+    <ClCompile Include="lua_bizhawk.c">
+      <CallingConvention>Cdecl</CallingConvention>
+      <PreprocessorDefinitions>LUA_BUILD_AS_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="lua51.vcxproj">
+      <Project>{4A1C0E22-91C6-4F0B-9B7E-2E4C0D6A1F31}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="win32\wingui.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

@@ -682,6 +682,7 @@ step2:
  */
 uint32 Trigger_TLB_Invalid_Exception(uint32 address, int operation)
 {
+
 #ifdef DEBUG_TLB
 	if(debugoptions.debug_tlb)
 	{
@@ -1416,3 +1417,4 @@ void Build_Whole_Direct_TLB_Lookup_Table(void)
 
 	InitTLBOther();
 }
+

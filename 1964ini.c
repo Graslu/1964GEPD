@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include "romlist.h"
 #include "win32/registry.h"
+#include "win32/wingui.h"
 
 uint32		ConvertHexCharToInt(char c);
 uint32		ConvertHexStringToInt(const char *str, int nchars);
@@ -191,13 +192,22 @@ void WriteProject64RDB(const uint32 crc1, const uint32 crc2, const uint8 country
 	/*~~~~~~~~~~~~~~*/
 	FILE *fp;
 	int found = 0;
-	char line[512], search_string[32];
+	char line[512], search_string[32], rdbpath[512];
 	/*~~~~~~~~~~~~~~*/
 
 	if(!strstr(gRegSettings.VideoPlugin, "Jabo")) /* if jabo isn't current video plugin, don't bother updating rdb file */
 		return;
 	sprintf(search_string, "[%08X-%08X-C:%02X]", crc1, crc2, countrycode);
-	if((fp = fopen("Project64.rdb", "a+")) != NULL)
+
+	/*
+	 * A bare filename resolves against the current directory, which the ROM
+	 * dialog moves to whichever folder the ROM was picked from. Jabo only reads
+	 * the copy sitting next to 1964.exe, so always write that one.
+	 */
+	strcpy(rdbpath, directories.main_directory);
+	strcat(rdbpath, "Project64.rdb");
+
+	if((fp = fopen(rdbpath, "a+")) != NULL)
 	{
 		while(!found && fgets(line, 512, fp) != NULL) /* read every line */
 			if(strstr(line, search_string)) /* setting exists exit function */

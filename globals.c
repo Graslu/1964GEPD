@@ -65,7 +65,7 @@ void HideCursor(int state)
     MSVC doesn't have strnstr() yet so let's add it here
  =======================================================================================================================
  */
-__forceinline uint32 strnlen(const char *needle, uint32 len)
+__forceinline uint32 strnlen_1964(const char *needle, uint32 len)
 {
 	const char *pStr = needle;
 
@@ -81,7 +81,7 @@ char *strnstr(const char *haystack, const char *needle, uint32 len)
 	int i;
 	uint32 needle_len;
 
-	if ((needle_len = strnlen(needle, len)) == 0)
+	if ((needle_len = strnlen_1964(needle, len)) == 0)
 		return (char *)haystack;
 
 	for (i=0; i<=(int)(len-needle_len); i++)

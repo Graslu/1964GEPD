@@ -36,6 +36,7 @@
 #include "win32/windebug.h"
 #include "cheatcode.h"
 #include "dynarec/dynacpu.h"
+#include "lua_bizhawk.h"
 
 extern void		Init_Timer_Event_List(void);
 extern uint32	TLB_Error_Vector;
@@ -552,7 +553,9 @@ void Trigger_VIInterrupt(void)
 		CodeList_ApplyAllCode(INGAME);
 #endif
 	}
-	
+
+	LuaShim_OnFrameEnd();
+
 	/* Apply the PD 60fps NTSC timing hack */
 	if(emuoptions.PDSpeedHack && emuoptions.OverclockFactor != 1 && rominfo.TV_System == TV_SYSTEM_NTSC)
 		PDTimingHack();

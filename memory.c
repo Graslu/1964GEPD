@@ -921,3 +921,5 @@ void UnprotectAllBlocks(void)
 
 	PROTECT_MEMORY_TRACE(TRACE0("Unprotect All Blocks"));
 }
+
+

@@ -780,6 +780,8 @@
 #define ID_GEFIRINGHACK                 1545
 #define ID_PDSPEEDHACK                  1546
 #define ID_GEDISABLEHEADROLL            1547
+#define ID_LUA_LOADSCRIPT               1600
+#define ID_LUA_STOPSCRIPT               1601
 #define IDC_STATIC                      -1
 
 // Next default values for new objects

@@ -1,0 +1,23 @@
+# Build output
+build/
+Debug/
+Release/
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.idb
+*.res
+*.tlog
+*.log
+
+# Visual Studio user state
+.vs/
+*.suo
+*.user
+*.opensdf
+*.sdf
+*.VC.db
+
+# Local scratch
+luatest/

@@ -26,6 +26,7 @@
 #include "registry.h"
 #include "../plugins.h"
 #include "DLL_Input.h"
+#include "../lua_bizhawk.h"
 
 CONTROL		Controls[4];
 
@@ -322,6 +323,9 @@ void CONTROLLER_GetKeys(int _Control, BUTTONS *_Keys)
 		{
 		}
 	}
+
+	/* Let a running Lua script force buttons on or off over the plugin. */
+	LuaShim_ApplyInput(_Control, &_Keys->Value);
 }
 
 /*

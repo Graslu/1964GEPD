@@ -1,0 +1,58 @@
+name: Build
+
+on:
+  push:
+    branches: [ archipelago-lua, master, main ]
+    tags: [ 'v*' ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The runner image ships Visual Studio 2022, which is the v143 toolset
+      # both projects ask for. Everything else the link needs is in the
+      # Windows SDK or checked in as zlib/zlib.lib.
+      - uses: microsoft/setup-msbuild@v2
+
+      # Win32 only. The recompiler is x86 assembly, so there is no x64 build.
+      - name: Build
+        run: msbuild 1964.vcxproj /p:Configuration=Release /p:Platform=Win32 /m
+
+      - name: Collect output
+        run: |
+          mkdir dist
+          copy build\Release\1964.exe dist\
+          copy build\Release\lua51.dll dist\
+          copy README.md dist\
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 1964GEPD-AP
+          path: dist/
+
+      - name: Package for release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: Compress-Archive -Path dist\* -DestinationPath 1964GEPD-AP-${{ github.ref_name }}.zip
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: 1964GEPD-AP-${{ github.ref_name }}.zip
+          body: |
+            Built from ${{ github.sha }}.
+
+            This archive holds `1964.exe` and `lua51.dll` only. Drop both into an
+            existing [1964 GEPD](https://github.com/Graslu/1964GEPD/releases)
+            install, which supplies `zlib.dll`, the `Plugin` folder and
+            `Project64.rdb`. Replace the existing `1964.exe`.
+
+            See the README for the Archipelago setup.
