@@ -1,8 +1,10 @@
 # This repository is archived
 
-As of September 1st, 2026, this repository will be archived and be made read-only. 1964 GEPD Edition is considered feature complete as-is since 2023, and the interest should shift towards the available PC ports of both GoldenEye 007 (W.I.P.) and [Perfect Dark](https://github.com/perfect-dark-pc-port/perfect_dark).
+As of September 1st, 2026, this repository is archived and made read-only. 
 
-1964 GEPD Edition will stay available here for archival purposes, as well as playing old mods that may not be supported by the ports at the moment.
+1964 GEPD Edition is considered feature complete as-is since 2023, and the interest should shift towards the available PC ports of both GoldenEye 007 (W.I.P.) and [Perfect Dark](https://github.com/perfect-dark-pc-port/perfect_dark).
+
+1964 GEPD Edition will stay available here for archival purposes, as well as to play old mods that may not be supported by the ports at the moment.
 
 # 1964 GEPD Edition
 
